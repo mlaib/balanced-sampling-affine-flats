@@ -1,0 +1,60 @@
+{
+ "residual_frequencies": 3480,
+ "residual_energy": 49.95507011816761,
+ "low": [
+  {
+   "max_length_sq": 5,
+   "n_freq": 8,
+   "energy_share": 0.333711249187506
+  },
+  {
+   "max_length_sq": 10,
+   "n_freq": 16,
+   "energy_share": 0.7047290191520553
+  },
+  {
+   "max_length_sq": 18,
+   "n_freq": 32,
+   "energy_share": 0.8611653046509928
+  },
+  {
+   "max_length_sq": 25,
+   "n_freq": 48,
+   "energy_share": 0.8786173156187905
+  },
+  {
+   "max_length_sq": 49,
+   "n_freq": 104,
+   "energy_share": 0.9155913482245839
+  }
+ ],
+ "best_L_lines": [
+  {
+   "L": 4,
+   "n_freq": 240,
+   "freq_share": 0.06896551724137931,
+   "energy_share": 0.008006422623895454,
+   "min_length_sq": 65
+  },
+  {
+   "L": 8,
+   "n_freq": 480,
+   "freq_share": 0.13793103448275862,
+   "energy_share": 0.017754115034153355,
+   "min_length_sq": 58
+  },
+  {
+   "L": 16,
+   "n_freq": 960,
+   "freq_share": 0.27586206896551724,
+   "energy_share": 0.037019317817472634,
+   "min_length_sq": 50
+  }
+ ],
+ "seams_mean_abs_diff_m": {
+  "row0_vs_row60": 32.68852459016394,
+  "adjacent_rows": 1.6360655737704919,
+  "col0_vs_col60": 9.770491803278688,
+  "adjacent_cols": 2.1174863387978142
+ }
+}

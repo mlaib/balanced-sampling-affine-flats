@@ -1,0 +1,7 @@
+Software used for the results in results/ (recorded 2026-10-16).
+
+Python 3.12.3, numpy 2.4.6, scipy 1.18.0
+
+R version 4.3.3 (2024-02-29) 
+Platform: x86_64-pc-linux-gnu (64-bit) 
+BalancedSampling 2.1.1 

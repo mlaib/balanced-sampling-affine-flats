@@ -1,0 +1,245 @@
+"""Audit of the cube method balanced on rows and columns of the 61 x 61 grid (Section 7.2, Appendix A).
+
+A Python mirror of `cube` in BalancedSampling 2.1.1 (src/CubeClass.cc): units in random order; the flight
+phase moves p+1 fractional units at a time along an RREF null vector and stops as soon as at most p units
+are fractional; the landing phase then uses, for the n remaining units, only the first n-1 balancing
+variables. For each draw the flight is run once, and from its end point two landings are applied:
+
+  bs        the landing of BalancedSampling (suppression of the last balancing variables);
+  continued the flight continued while a nonzero u with A_J' u = 0 exists (all p equations kept),
+            followed by the same landing for any units still fractional.
+
+With the balancing variables of rows and columns the constraint polytope is integral, so the continued
+flight ends at an exactly balanced sample. Writes results/cube_audit_S2.csv (summary) and
+results/cube_audit_S2_draws.csv (one line per draw and landing, with the selected units).
+Usage: python3 audit_cube.py [B] [processes]
+"""
+import csv, os, sys, time
+from multiprocessing import Pool
+import numpy as np
+
+OUT = os.path.dirname(os.path.abspath(__file__))
+q = 61
+EPS = 1e-12      # integrality tolerance of BalancedSampling (snaps units during flight and landing)
+TOL = 1e-9       # units within TOL of 0 or 1 count as integral in the audit and in the continuation
+
+
+def rref(M):
+    """In-place reduced row echelon form with exact zero tests, as ReducedRowEchelonForm.cc."""
+    nrows, ncols = M.shape
+    lead = 0
+    for r in range(nrows):
+        if ncols <= lead:
+            return
+        while True:
+            nz = np.flatnonzero(M[r:, lead] != 0.0)
+            if nz.size:
+                i = r + nz[0]
+                break
+            lead += 1
+            if lead == ncols:
+                return
+        if i != r:
+            M[[i, r]] = M[[r, i]]
+        br = M[r]
+        br[lead + 1:] /= br[lead]
+        br[lead] = 1.0
+        t = M[:, lead].copy()
+        t[r] = 0.0
+        M[:, lead] = 0.0
+        M[r, lead] = 1.0
+        rows = np.flatnonzero(t)          # rows with t = 0 are unchanged (x - 0*b = x)
+        if rows.size:
+            M[rows, lead + 1:] -= np.outer(t[rows], br[lead + 1:])
+        lead += 1
+
+
+def null_vector(M):
+    """Null vector of an RREF matrix with ncols = nrows + 1, as CubeVectorInNullSpace.cc."""
+    nrows, ncols = M.shape
+    if M[nrows - 1, nrows - 1] == 1.0:
+        u = np.empty(ncols)
+        u[-1] = 1.0
+        u[:nrows] = -M[:, ncols - 1]
+        return u
+    u = np.where(np.arange(ncols) % 2 == 0, -1.0, 1.0)
+    for i in range(nrows):
+        ones = np.flatnonzero(M[i] == 1.0)
+        if not ones.size:
+            continue
+        lead = ones[0]
+        u[lead] = -np.dot(u[lead + 1:], M[i, lead + 1:])
+    return u
+
+
+class Cube:
+    def __init__(self, prob, x, rng):
+        self.N, self.p = x.shape
+        self.A = x / prob[:, None]
+        self.pi = prob.astype(float).copy()
+        self.rng = rng
+        self.lst = list(rng.permutation(self.N))
+        self.pos = {u: i for i, u in enumerate(self.lst)}
+        self.sample = []
+
+    def erase(self, unit):
+        k = self.pos.pop(unit)
+        last = self.lst.pop()
+        if k < len(self.lst):
+            self.lst[k] = last
+            self.pos[last] = k
+
+    def update(self, cand, u):
+        pi = self.pi[cand]
+        with np.errstate(divide="ignore", invalid="ignore"):
+            l_down, l_up = np.abs(pi / u), np.abs((1.0 - pi) / u)
+        pos = u >= 0.0
+        lam1 = min(np.min(l_up[pos], initial=np.inf), np.min(l_down[~pos], initial=np.inf))
+        lam2 = min(np.min(l_down[pos], initial=np.inf), np.min(l_up[~pos], initial=np.inf))
+        lam = lam1 if self.rng.uniform(0.0, lam1 + lam2) < lam2 else -lam2
+        self.pi[cand] = pi + lam * u
+        for unit in cand:
+            v = self.pi[unit]
+            if v <= EPS or v >= 1.0 - EPS:
+                self.erase(unit)
+                if v >= 1.0 - EPS:
+                    self.sample.append(unit)
+
+    def flight(self):
+        m = self.p + 1
+        while len(self.lst) >= m:
+            cand = self.lst[:m]
+            B = self.A[cand].T.copy()
+            rref(B)
+            self.update(cand, null_vector(B))
+
+    def fractional(self):
+        return [u for u in self.lst if TOL < self.pi[u] < 1.0 - TOL]
+
+    def nullity(self):
+        F = self.fractional()
+        if not F:
+            return 0
+        s = np.linalg.svd(self.A[F].T, compute_uv=False)
+        tol = s.max() * max(self.p, len(F)) * np.finfo(float).eps * 10
+        return len(F) - int((s > tol).sum())
+
+    def continue_flight(self):
+        """Move the fractional units along null vectors of A_F' (all p equations) until none exists."""
+        steps = 0
+        while True:
+            F = self.fractional()
+            if not F:
+                break
+            BF = self.A[F].T
+            _, s, Vt = np.linalg.svd(BF)
+            tol = s.max() * max(BF.shape) * np.finfo(float).eps * 10
+            if int((s > tol).sum()) == len(F):
+                break
+            self.update(F, Vt[-1])
+            steps += 1
+        return steps
+
+    def landing(self):
+        while len(self.lst) > 1:
+            m = len(self.lst)
+            cand = list(self.lst)
+            B = self.A[cand][:, :m - 1].T.copy()
+            rref(B)
+            self.update(cand, null_vector(B))
+        if len(self.lst) == 1:
+            unit = self.lst[0]
+            if self.rng.uniform() < self.pi[unit]:
+                self.sample.append(unit)
+            self.erase(unit)
+        return np.array(sorted(self.sample))
+
+    def copy(self):
+        c = Cube.__new__(Cube)
+        c.N, c.p, c.A, c.rng = self.N, self.p, self.A, self.rng
+        c.pi, c.lst, c.pos, c.sample = self.pi.copy(), list(self.lst), dict(self.pos), list(self.sample)
+        return c
+
+
+def counts(s):
+    """Stratum counts on rows, columns, anti-diagonals i+j and diagonals i-j (mod 61)."""
+    i, j = np.divmod(s, q)
+    return [np.bincount(v % q, minlength=q) for v in (i, j, i + j, i - j)]
+
+
+_DATA = {}
+
+
+def data():
+    if not _DATA:
+        _DATA["X"] = np.loadtxt(f"{OUT}/data/grid_X.csv", delimiter=",")[:, :120]   # row levels 1-60, column levels 1-60
+        _DATA["y"] = np.loadtxt(f"{OUT}/data/grid_y.csv")
+    return _DATA["X"], _DATA["y"]
+
+
+def one_draw(args):
+    k, seed = args
+    X, y = data()
+    N = len(y)
+    prob = np.full(N, k / N)
+    rng = np.random.default_rng(seed)
+    c = Cube(prob, np.c_[prob, X], rng)
+    t0 = time.time()
+    c.flight()
+    J, nul = len(c.fractional()), c.nullity()
+    out = []
+    for name in ("bs", "continued"):
+        d = c.copy()
+        steps = d.continue_flight() if name == "continued" else 0
+        J_after = len(d.fractional())
+        s = d.landing()
+        rc, cc, ac, dc = counts(s)
+        out.append({"k": k, "seed": seed, "landing": name, "flight_end_fractional": J,
+                    "flight_end_nullity": nul, "continuation_steps": steps,
+                    "fractional_before_landing": J_after, "size": len(s),
+                    "maxdev_rows": float(np.abs(rc - k / q).max()), "maxdev_cols": float(np.abs(cc - k / q).max()),
+                    "maxdev_S4": float(max(np.abs(c_ - k / q).max() for c_ in (rc, cc, ac, dc))),
+                    "estimate": float(y[s].mean()), "seconds": time.time() - t0,
+                    "sample": " ".join(map(str, s))})
+    return out
+
+
+if __name__ == "__main__":
+    B = int(sys.argv[1]) if len(sys.argv) > 1 else 2000
+    procs = int(sys.argv[2]) if len(sys.argv) > 2 else 12
+    y = np.loadtxt(f"{OUT}/data/grid_y.csv")
+    N, Ybar = len(y), y.mean()
+    jobs = [(k, int(s)) for k in (61, 183)
+            for s in np.random.SeedSequence(2026 + k).generate_state(B)]
+    with Pool(procs) as pool:
+        draws = [row for res in pool.imap(one_draw, jobs, chunksize=4) for row in res]
+    with open(f"{OUT}/results/cube_audit_S2_draws.csv", "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(draws[0]))
+        w.writeheader(); w.writerows(draws)
+    summary = []
+    for k in (61, 183):
+        srs = (1 - k / N) * y.var(ddof=1) / k
+        for name in ("bs", "continued"):
+            d = [r for r in draws if r["k"] == k and r["landing"] == name]
+            se2 = np.array([(r["estimate"] - Ybar) ** 2 for r in d])
+            exact_r = np.array([r["maxdev_rows"] < 1e-9 for r in d])
+            exact_c = np.array([r["maxdev_cols"] < 1e-9 for r in d])
+            summary.append({"k": k, "landing": name, "B": len(d), "deff": se2.mean() / srs,
+                            "deff_se": se2.std(ddof=1) / np.sqrt(len(d)) / srs,
+                            "share_exact_rows": exact_r.mean(), "share_exact_cols": exact_c.mean(),
+                            "share_exact_S2": (exact_r & exact_c).mean(),
+                            "share_exact_S4": np.mean([r["maxdev_S4"] < 1e-9 for r in d]),
+                            "mean_maxdev_rows": np.mean([r["maxdev_rows"] for r in d]),
+                            "mean_maxdev_cols": np.mean([r["maxdev_cols"] for r in d]),
+                            "size_min": min(r["size"] for r in d), "size_max": max(r["size"] for r in d),
+                            "flight_end_fractional_mean": np.mean([r["flight_end_fractional"] for r in d]),
+                            "flight_end_fractional_min": min(r["flight_end_fractional"] for r in d),
+                            "flight_end_fractional_max": max(r["flight_end_fractional"] for r in d),
+                            "share_nullity_positive": np.mean([r["flight_end_nullity"] > 0 for r in d]),
+                            "flight_end_nullity_mean": np.mean([r["flight_end_nullity"] for r in d]),
+                            "fractional_before_landing_max": max(r["fractional_before_landing"] for r in d)})
+    with open(f"{OUT}/results/cube_audit_S2.csv", "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(summary[0]))
+        w.writeheader(); w.writerows(summary)
+    for r in summary:
+        print({a: (round(b, 4) if isinstance(b, float) else b) for a, b in r.items()})
