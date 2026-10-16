@@ -66,9 +66,9 @@ def grid_balance_shares():
 def table3(sh):
     d = json.load(open(f"{OUT}/results/grid_exact.json"))
     srs = {r["k"]: r["var"] for r in d["designs"] if r["design"] == "SRS"}
-    rows = ["| Design | Balanced on | Evaluation | $k=61$ | $k=183$ | Residual worst-case factor | Share exactly balanced on $\\mathcal S_2$ / $\\mathcal S_4$ |",
-            "|---|---|---|---|---|---|---|",
-            "| Simple random sampling | none | exact | 1 | 1 | infinite | below $10^{-6}$ / below $10^{-6}$ |"]
+    rows = ["| Design | Balanced on | Evaluation | $k=61$ | $k=183$ | Residual worst-case factor | Exactly balanced on $\\mathcal S_2$ / $\\mathcal S_4$, $k=61$ | Exactly balanced on $\\mathcal S_2$ / $\\mathcal S_4$, $k=183$ |",
+            "|---|---|---|---|---|---|---|---|",
+            "| Simple random sampling | none | exact | 1 | 1 | infinite | below $10^{-6}$ / below $10^{-6}$ | below $10^{-6}$ / below $10^{-6}$ |"]
     name_s = {"S1 rows": "$\\mathcal S_1$ (rows)", "S2 rows+cols": "$\\mathcal S_2$ (rows, columns)",
               "S3 +anti-diagonals": "$\\mathcal S_3$ ($\\mathcal S_2$ + anti-diagonals)", "S4 +diagonals": "$\\mathcal S_4$ ($\\mathcal S_3$ + diagonals)"}
     bal_s = {k: f"{v[0]:.3f} / {v[1]:.3f}" for k, v in sh.items()}
@@ -82,7 +82,7 @@ def table3(sh):
         else:
             L = int(des.split("best-")[1].split()[0])
             name, wc = f"Coset design, best {L} lattices", f"{58 / L:.2f}"
-        rows.append(f"| {name} | {name_s[strat]} | exact | {byk[61]['deff']:.4f} | {byk[183]['deff']:.4f} | {wc} | {bal_s[strat]} |")
+        rows.append(f"| {name} | {name_s[strat]} | exact | {byk[61]['deff']:.4f} | {byk[183]['deff']:.4f} | {wc} | {bal_s[strat]} | {bal_s[strat]} |")
     mc = {}
     for path in glob.glob(f"{OUT}/results/mc_grid/*.csv"):
         for r in rd(path):
@@ -98,19 +98,19 @@ def table3(sh):
             B = int(r["B"]); p2, p4 = float(r["prop_exact_S2"]), float(r["prop_exact_S4"])
             cells.append(f"{float(r['mse'])/srs[k]:.4f} ({float(r['mse_se'])/srs[k]:.4f})")
             share = lambda p: "none" if p == 0 else f"{p:.3f} ({math.sqrt(p*(1-p)/B):.3f})"
-            bal.append(f"{share(p2)} / {share(p4)} at $k={k}$")
+            bal.append(f"{share(p2)} / {share(p4)}")
         B_ = int(mc.get(key, {}).get(61, {}).get("B", 0))
         B_ = f"{B_:,}".replace(",", " ") if B_ >= 10000 else str(B_)
-        rows.append(f"| {label[key][0]} | {label[key][1]} | Monte Carlo, {B_} draws (s.e.) | {cells[0]} | {cells[1]} | infinite | {'; '.join(bal)} |")
+        rows.append(f"| {label[key][0]} | {label[key][1]} | Monte Carlo, {B_} draws (s.e.) | {cells[0]} | {cells[1]} | infinite | {bal[0]} | {bal[1]} |")
     audit = f"{OUT}/results/cube_audit_S2.csv"
     if os.path.exists(audit):   # cube method with the flight phase continued to a vertex (audit_cube.py)
         au = {int(r["k"]): r for r in rd(audit) if r["landing"] == "continued"}
         share = lambda p, B: "none" if p == 0 else ("all" if p == 1 else f"{p:.3f} ({math.sqrt(p*(1-p)/B):.3f})")
         cells = [f"{float(au[k]['deff']):.4f} ({float(au[k]['deff_se']):.4f})" for k in (61, 183)]
-        bal = [f"{share(float(au[k]['share_exact_S2']), int(au[k]['B']))} / {share(float(au[k]['share_exact_S4']), int(au[k]['B']))} at $k={k}$"
+        bal = [f"{share(float(au[k]['share_exact_S2']), int(au[k]['B']))} / {share(float(au[k]['share_exact_S4']), int(au[k]['B']))}"
                for k in (61, 183)]
         rows.append(f"| Cube method, flight continued to a vertex | {name_s['S2 rows+cols']} | Monte Carlo, {int(au[61]['B'])} draws (s.e.) | "
-                    f"{cells[0]} | {cells[1]} | finite, not computed | {'; '.join(bal)} |")
+                    f"{cells[0]} | {cells[1]} | finite, not computed | {bal[0]} | {bal[1]} |")
     return "\n".join(rows)
 
 

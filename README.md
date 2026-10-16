@@ -29,7 +29,7 @@ from the stored results.
 | `test_theory.py` | Brute-force checks (support enumeration) of every exact statement in Sections 2–6; prints the number of checks per statement. |
 | `study_factorial.py` | Section 7.1 (complete factorial frames 2^7 and 3^5): responses, exact design effects, minimax mixtures; writes the inputs of `mc_cube.R`. |
 | `study_lattice.py` | Section 7.1: lattice sampling with a linear orthogonal array of maximal strength (Table 2, lattice column). |
-| `mc_cube.R` | Section 7.1: Monte Carlo for the cube method (random unit order before each draw). |
+| `mc_cube.R` | Section 7.1: Monte Carlo for the cube method (random unit order before each draw), with the split of each squared error into main-effect, residual and cross parts. |
 | `study_minimax_lp.py` | Table 1: minimax mixing distributions by linear programming, reduced by the monomial group. |
 | `certify_lp.py` | Exact rational certificates for program (8): primal mixtures where the bound is attained, dual solutions where it is not. |
 | `study_grid.py` | Section 7.2 (61 x 61 elevation grid): exact design effects, ranking of the lattice directions, exact evaluation of the variance estimator (Table 4), residual Fourier energy; writes the inputs of `mc_grid.R`. |
@@ -59,7 +59,7 @@ Directions are stored as reduced row-echelon bases of the dual subspace D = V⊥
 | `results/factorial_minimax_mixtures.json` | Support (dual bases) and probabilities of the minimax mixtures of Section 7.1. |
 | `results/factorial_lattice.csv` | Lattice sampling: strength, dual basis of the chosen array, exact design effects and worst case. |
 | `results/factorial_designs.json` | Size of the support, worst case relative to the bound, positivity of second-order inclusion probabilities. |
-| `results/factorial_cube_p2_m7.csv`, `results/factorial_cube_p3_m5.csv` | Monte Carlo summaries for the cube method (mean squared error, standard error, share exactly balanced). |
+| `results/factorial_cube_p2_m7.csv`, `results/factorial_cube_p3_m5.csv` | Monte Carlo summaries for the cube method (mean squared error, standard error, share exactly balanced, and the main-effect, residual and cross parts of the mean squared error with their standard errors). |
 | `results/minimax_lp.csv` | Value of program (8) for every configuration solved (Table 1 shows a subset). |
 | `results/lp_certificates.json` | Rational certificates: mixtures attaining the bound, and dual solutions with the exact minimax value where it is not attained. |
 | `results/grid_exact.json` | Exact design effects of the grid designs, the evaluation of the variance estimator, and the sensitivity to ties among lattice directions. |
