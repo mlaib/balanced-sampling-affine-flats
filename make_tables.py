@@ -119,7 +119,7 @@ def table4():
     d = json.load(open(f"{OUT}/results/grid_exact.json"))
     name_s = {"S1 rows": "$\\mathcal S_1$", "S2 rows+cols": "$\\mathcal S_2$",
               "S3 +anti-diagonals": "$\\mathcal S_3$", "S4 +diagonals": "$\\mathcal S_4$"}
-    rows = ["| Design ($k=183$, $r=3$) | Balanced on | Coefficient of variation of $\\hat v$ | Coverage of the nominal 95% interval | Share of samples with $\\hat v=0$ |",
+    rows = ["| Design ($k=183$, $r=3$) | Balanced on | Coefficient of variation of $v$ | Coverage of the nominal 95% interval | Share of samples with $v=0$ |",
             "|---|---|---|---|---|"]
     for r in d["variance_estimation"]:
         name = "Equal-weight coset design" if r["design"] == "flat" else f"Coset design, best {r['design'][4:]} lattices"

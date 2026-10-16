@@ -1,0 +1,5 @@
+k,landing,B,deff,deff_se,share_exact_rows,share_exact_cols,share_exact_S2,share_exact_S4,mean_maxdev_rows,mean_maxdev_cols,size_min,size_max,flight_end_fractional_mean,flight_end_fractional_min,flight_end_fractional_max,share_nullity_positive,flight_end_nullity_mean,fractional_before_landing_max
+61,bs,2000,0.2348486288306336,0.007088478155500869,0.2235,0.0435,0.0365,0.0,0.78,0.992,61,61,101.5955,65,121,1.0,14.517,121
+61,continued,2000,0.15807196563468479,0.005000456447339862,1.0,1.0,1.0,0.0,0.0,0.0,61,61,101.5955,65,121,1.0,14.517,0
+183,bs,2000,0.2053742756645139,0.006411254161776703,0.0785,0.0005,0.0,0.0,0.926,1.098,183,183,103.8195,66,121,1.0,16.7245,121
+183,continued,2000,0.16928664048656947,0.005324441358424533,1.0,1.0,1.0,0.0,0.0,0.0,183,183,103.8195,66,121,1.0,16.7245,0

@@ -12,3 +12,4 @@
 | Cube method | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | Monte Carlo, 400 draws (s.e.) | 0.4110 (0.0258) | 0.3121 (0.0237) | infinite | none / none at $k=61$; none / none at $k=183$ |
 | Local pivotal method | none (spatial spread) | Monte Carlo, 20 000 draws (s.e.) | 0.0976 (0.0010) | 0.0413 (0.0004) | infinite | none / none at $k=61$; none / none at $k=183$ |
 | Local cube method | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) and spread | Monte Carlo, 500 draws (s.e.) | 0.4349 (0.0284) | 0.5146 (0.0368) | infinite | none / none at $k=61$; none / none at $k=183$ |
+| Cube method, flight continued to a vertex | $\mathcal S_2$ (rows, columns) | Monte Carlo, 2000 draws (s.e.) | 0.1581 (0.0050) | 0.1693 (0.0053) | finite, not computed | all / none at $k=61$; all / none at $k=183$ |

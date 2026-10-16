@@ -3,7 +3,9 @@
 A Python mirror of `cube` in BalancedSampling 2.1.1 (src/CubeClass.cc): units in random order; the flight
 phase moves p+1 fractional units at a time along an RREF null vector and stops as soon as at most p units
 are fractional; the landing phase then uses, for the n remaining units, only the first n-1 balancing
-variables. For each draw the flight is run once, and from its end point two landings are applied:
+variables.  In the flight phase the null vectors are computed from the bipartite-graph structure of the
+balancing matrix (graph_null_vector), which gives the RREF vectors exactly and is about ten times faster;
+check_graph_null_vector compares the two step by step. For each draw the flight is run once, and from its end point two landings are applied:
 
   bs        the landing of BalancedSampling (suppression of the last balancing variables);
   continued the flight continued while a nonzero u with A_J' u = 0 exists (all p equations kept),
@@ -72,6 +74,59 @@ def null_vector(M):
     return u
 
 
+def graph_null_vector(units):
+    """The null vector that null_vector(rref(B)) returns in exact arithmetic, for B the balancing matrix
+    [1, rows 1-60, columns 1-60]/pi restricted to `units` (in candidate order).  The columns of B have the
+    matroid of the bipartite graph of rows and columns (unit (i, j) is an edge), so the pivot columns of
+    the RREF form the spanning forest built greedily in candidate order; the free columns get -1/+1 by
+    the parity of their position, and the forest edges then solve the zero-sum equation at every row and
+    column vertex.  Used by the flight phase for speed; check_graph_null_vector compares the two."""
+    i, j = np.divmod(np.asarray(units), q)
+    n = len(units)
+    parent = list(range(2 * q))
+
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+    tree = [False] * n
+    for e in range(n):
+        a, b = find(int(i[e])), find(q + int(j[e]))
+        if a != b:
+            parent[a] = b
+            tree[e] = True
+    u = np.where(np.arange(n) % 2 == 0, -1.0, 1.0)
+    d = np.zeros(2 * q)
+    adj = [[] for _ in range(2 * q)]
+    for e in range(n):
+        if tree[e]:
+            adj[i[e]].append(e)
+            adj[q + j[e]].append(e)
+        else:
+            d[i[e]] += u[e]
+            d[q + j[e]] += u[e]
+    deg = [len(a_) for a_ in adj]
+    done = [False] * n
+    stack = [v for v in range(2 * q) if deg[v] == 1]
+    while stack:
+        v = stack.pop()
+        if deg[v] != 1:
+            continue
+        e = next(e_ for e_ in adj[v] if not done[e_])
+        u[e] = -d[v]
+        done[e] = True
+        w = q + int(j[e]) if v == i[e] else int(i[e])
+        d[w] += u[e]
+        d[v] = 0.0
+        deg[v] -= 1
+        deg[w] -= 1
+        if deg[w] == 1:
+            stack.append(w)
+    assert np.abs(d).max() < 1e-9 and all(done[e] for e in range(n) if tree[e])
+    return u
+
+
 class Cube:
     def __init__(self, prob, x, rng):
         self.N, self.p = x.shape
@@ -105,13 +160,19 @@ class Cube:
                 if v >= 1.0 - EPS:
                     self.sample.append(unit)
 
-    def flight(self):
+    def flight(self, graph=True):
+        """Fast flight phase of BalancedSampling: p+1 fractional units at a time, until at most p remain.
+        graph=True computes the null vectors with graph_null_vector, graph=False with the RREF."""
         m = self.p + 1
         while len(self.lst) >= m:
             cand = self.lst[:m]
-            B = self.A[cand].T.copy()
-            rref(B)
-            self.update(cand, null_vector(B))
+            if graph:
+                u = graph_null_vector(cand)
+            else:
+                B = self.A[cand].T.copy()
+                rref(B)
+                u = null_vector(B)
+            self.update(cand, u)
 
     def fractional(self):
         return [u for u in self.lst if TOL < self.pi[u] < 1.0 - TOL]
@@ -177,6 +238,29 @@ def data():
     return _DATA["X"], _DATA["y"]
 
 
+def check_graph_null_vector(args):
+    """Run one flight with RREF null vectors and compare graph_null_vector with them at every step;
+    then rerun the flight with graph_null_vector from the same seed and compare the end points."""
+    k, seed = args
+    X, y = data()
+    prob = np.full(len(y), k / len(y))
+    c = Cube(prob, np.c_[prob, X], np.random.default_rng(seed))
+    m, worst, steps = c.p + 1, 0.0, 0
+    while len(c.lst) >= m:
+        cand = c.lst[:m]
+        B = c.A[cand].T.copy()
+        rref(B)
+        u = null_vector(B)
+        worst = max(worst, float(np.abs(u - graph_null_vector(cand)).max() / np.abs(u).max()))
+        c.update(cand, u)
+        steps += 1
+    g = Cube(prob, np.c_[prob, X], np.random.default_rng(seed))
+    g.flight(graph=True)
+    same = sorted(c.sample) == sorted(g.sample) and sorted(c.lst) == sorted(g.lst)
+    return {"k": k, "seed": seed, "steps": steps, "max_rel_diff": worst, "same_end_point": same,
+            "max_abs_pi_diff": float(np.abs(c.pi - g.pi).max())}
+
+
 def one_draw(args):
     k, seed = args
     X, y = data()
@@ -211,8 +295,12 @@ if __name__ == "__main__":
     N, Ybar = len(y), y.mean()
     jobs = [(k, int(s)) for k in (61, 183)
             for s in np.random.SeedSequence(2026 + k).generate_state(B)]
+    draws, t0 = [], time.time()
     with Pool(procs) as pool:
-        draws = [row for res in pool.imap(one_draw, jobs, chunksize=4) for row in res]
+        for n, res in enumerate(pool.imap(one_draw, jobs, chunksize=4), 1):
+            draws += res
+            if n % 200 == 0:
+                print(f"{n}/{len(jobs)} draws, {time.time() - t0:.0f} s", file=sys.stderr, flush=True)
     with open(f"{OUT}/results/cube_audit_S2_draws.csv", "w", newline="") as fh:
         w = csv.DictWriter(fh, fieldnames=list(draws[0]))
         w.writeheader(); w.writerows(draws)
