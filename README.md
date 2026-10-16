@@ -35,7 +35,9 @@ from the stored results.
 | `study_grid.py` | Section 7.2 (61 x 61 elevation grid): exact design effects, ranking of the lattice directions, exact evaluation of the variance estimator (Table 4), residual Fourier energy; writes the inputs of `mc_grid.R`. |
 | `mc_grid.R` | Section 7.2: Monte Carlo for the cube, local pivotal (lpm2) and local cube (lcube) methods. |
 | `run_grid_mc.sh` | Runs `mc_grid.R` for every design and sample size of Section 7.2 with the seeds and replicate numbers of Appendix A. |
-| `audit_cube.py` | Section 7.2: Python transcription of the flight and landing phases of `cube` in BalancedSampling 2.1.1, instrumented, with the flight optionally continued until no move preserves all balancing equations; `--decompose` splits each mean squared error into main-effect, residual and cross parts. |
+| `audit_cube.py` | Section 7.2: Python transcription of the flight and landing phases of `cube` in BalancedSampling 2.1.1, instrumented, with the flight optionally continued until no move preserves all balancing equations; `--decompose` splits each mean squared error into main-effect, residual and cross parts. Given a sequence of uniform numbers (`UniformStream`), it uses them where the package calls R's generator. |
+| `validate_transcription.py` | Appendix A: runs `cube` in R for ten seeds per sample size, feeds the uniform numbers R generates for each seed to `audit_cube.py`, and checks that both return the same sample. |
+| `count_balanced_samples.py` | Sections 1 and 6: vertices and integral vertices of the balancing polytope of Example 2 of Tillé and Rivest (N = 8 and 16), and the samples of the q x q grid balanced on rows, columns and anti-diagonals (q = 5, 7, 11), with the weights of the uniform design over them. |
 | `time_preprocessing.py` | Section 6: time and memory to enumerate admissible directions and solve program (8), acceptance rates of rejection sampling, size of the stored minimax supports. |
 | `make_tables.py` | Tables 1–4 from `results/`, including the exact shares of grid coset samples balanced on S2 and S4. |
 | `reproduce.sh` | Runs all of the above in order. |
@@ -69,5 +71,7 @@ Directions are stored as reduced row-echelon bases of the dual subspace D = V⊥
 | `results/mc_grid/*.csv` | Monte Carlo summaries for the cube, local pivotal and local cube methods on the grid. |
 | `results/cube_audit_S2.csv`, `results/cube_audit_S2_draws.csv` | Audit of the cube method balanced on rows and columns: summary, and one line per draw with the selected units. |
 | `results/cube_audit_S2_decomposition.csv` | Decomposition of the mean squared error of the audited designs into main-effect, residual and cross parts. |
+| `results/exhaustive_counts.json` | Exhaustive counts of Sections 1 and 6: vertices of the Example 2 polytopes, balanced samples of the q x q grids, flats among them and spectral weights of the uniform design. |
+| `results/transcription_check.csv` | For each sample size and seed, whether the transcription returned the package's sample, and how many uniform numbers it used. |
 | `results/preprocessing_costs.csv` | Preprocessing cost of the coset designs of Table 1 and Section 7.1 (one laptop core). |
 | `results/table1.md` – `results/table4.md` | The tables of the manuscript. |

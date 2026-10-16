@@ -129,15 +129,35 @@ def graph_null_vector(units):
     return u
 
 
+class UniformStream:
+    """Supplies given uniform numbers in order, standing in for R's unif_rand (validate_transcription.py)."""
+    def __init__(self, U):
+        self.U, self.i = U, 0
+
+    def __call__(self):
+        u = self.U[self.i]
+        self.i += 1
+        return u
+
+
 class Cube:
-    def __init__(self, prob, x, rng):
+    def __init__(self, prob, x, rng, stream=None):
         self.N, self.p = x.shape
         self.A = x / prob[:, None]
         self.pi = prob.astype(float).copy()
-        self.rng = rng
-        self.lst = list(rng.permutation(self.N))
+        self.rng, self.stream = rng, stream
+        if stream is None:
+            self.lst = list(rng.permutation(self.N))
+        else:                                   # IndexList::Shuffle: k = i + floor(u (len - i))
+            self.lst = list(range(self.N))
+            for i in range(self.N - 1):
+                k = i + int(stream() * (self.N - i))
+                self.lst[i], self.lst[k] = self.lst[k], self.lst[i]
         self.pos = {u: i for i, u in enumerate(self.lst)}
         self.sample = []
+
+    def unif(self, scale=1.0):
+        return self.stream() * scale if self.stream is not None else self.rng.uniform(0.0, scale)
 
     def erase(self, unit):
         k = self.pos.pop(unit)
@@ -153,7 +173,7 @@ class Cube:
         pos = u >= 0.0
         lam1 = min(np.min(l_up[pos], initial=np.inf), np.min(l_down[~pos], initial=np.inf))
         lam2 = min(np.min(l_down[pos], initial=np.inf), np.min(l_up[~pos], initial=np.inf))
-        lam = lam1 if self.rng.uniform(0.0, lam1 + lam2) < lam2 else -lam2
+        lam = lam1 if self.unif(lam1 + lam2) < lam2 else -lam2
         self.pi[cand] = pi + lam * u
         for unit in cand:
             v = self.pi[unit]
@@ -212,14 +232,14 @@ class Cube:
             self.update(cand, null_vector(B))
         if len(self.lst) == 1:
             unit = self.lst[0]
-            if self.rng.uniform() < self.pi[unit]:
+            if self.unif() < self.pi[unit]:
                 self.sample.append(unit)
             self.erase(unit)
         return np.array(sorted(self.sample))
 
     def copy(self):
         c = Cube.__new__(Cube)
-        c.N, c.p, c.A, c.rng = self.N, self.p, self.A, self.rng
+        c.N, c.p, c.A, c.rng, c.stream = self.N, self.p, self.A, self.rng, self.stream
         c.pi, c.lst, c.pos, c.sample = self.pi.copy(), list(self.lst), dict(self.pos), list(self.sample)
         return c
 
