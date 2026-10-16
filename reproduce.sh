@@ -10,10 +10,11 @@ python3 study_lattice.py                    # Section 7.1: lattice sampling
 python3 study_minimax_lp.py                 # Table 1
 python3 certify_lp.py                       # exact certificates for Table 1 (attainment and non-attainment)
 python3 study_grid.py                       # Section 7.2: exact results, lattice ranking, spectrum, Table 4 inputs
+python3 time_preprocessing.py               # Section 6: preprocessing cost of the minimax mixtures
 if [ "${QUICK:-0}" != "1" ]; then
   Rscript mc_cube.R data/fact_p2_m7_X.csv data/fact_p2_m7_Y.csv 2 7 8,16,32 20000 results/factorial_cube_p2_m7.csv 11
   Rscript mc_cube.R data/fact_p3_m5_X.csv data/fact_p3_m5_Y.csv 3 5 9,27,81 20000 results/factorial_cube_p3_m5.csv 12
   bash run_grid_mc.sh                       # Section 7.2: cube, local pivotal and local cube methods
-  python3 audit_cube.py 2000 12             # Section 7.2: audit of the cube method on rows and columns
+  python3 audit_cube.py 2000 12             # Section 7.2: audit of the cube method on rows and columns (and its MSE decomposition)
 fi
 python3 make_tables.py                      # Tables 1-4 (results/table1.md ... table4.md)

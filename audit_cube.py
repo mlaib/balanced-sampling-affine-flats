@@ -13,8 +13,10 @@ check_graph_null_vector compares the two step by step. For each draw the flight 
 
 With the balancing variables of rows and columns the constraint polytope is integral, so the continued
 flight ends at an exactly balanced sample. Writes results/cube_audit_S2.csv (summary) and
-results/cube_audit_S2_draws.csv (one line per draw and landing, with the selected units).
-Usage: python3 audit_cube.py [B] [processes]
+results/cube_audit_S2_draws.csv (one line per draw and landing, with the selected units), and
+results/cube_audit_S2_decomposition.csv, which splits each mean squared error into the part due to the
+row and column main effects (zero for balanced samples), the residual part and the cross term.
+Usage: python3 audit_cube.py [B] [processes]      python3 audit_cube.py --decompose (from stored draws)
 """
 import csv, os, sys, time
 from multiprocessing import Pool
@@ -288,7 +290,35 @@ def one_draw(args):
     return out
 
 
-if __name__ == "__main__":
+def decompose():
+    """MSE = E(mbar^2) + E(rbar^2) + 2E(mbar rbar), with y - Ybar = m + rho, m the row-plus-column main effects."""
+    Y = np.loadtxt(f"{OUT}/data/volcano61.csv", delimiter=",")
+    y, Ybar = Y.reshape(-1), Y.mean()
+    m = ((Y.mean(axis=1, keepdims=True) - Ybar) + (Y.mean(axis=0, keepdims=True) - Ybar)).reshape(-1)
+    rho = y - Ybar - m
+    rows = list(csv.DictReader(open(f"{OUT}/results/cube_audit_S2_draws.csv")))
+    out = []
+    for k in (61, 183):
+        srs = (1 - k / y.size) * y.var(ddof=1) / k
+        for name in ("bs", "continued"):
+            S = [np.array(r["sample"].split(), dtype=int) for r in rows if int(r["k"]) == k and r["landing"] == name]
+            em = np.array([m[s_].mean() for s_ in S])
+            er = np.array([rho[s_].mean() for s_ in S])
+            row = {"k": k, "landing": name, "B": len(S)}
+            for part, v in (("main", em ** 2), ("residual", er ** 2), ("cross", 2 * em * er), ("total", (em + er) ** 2)):
+                row[f"deff_{part}"] = v.mean() / srs
+                row[f"deff_{part}_se"] = v.std(ddof=1) / np.sqrt(len(S)) / srs
+            out.append(row)
+    with open(f"{OUT}/results/cube_audit_S2_decomposition.csv", "w", newline="") as fh:
+        w = csv.DictWriter(fh, fieldnames=list(out[0]))
+        w.writeheader(); w.writerows(out)
+    for r in out:
+        print({a: (round(b, 4) if isinstance(b, float) else b) for a, b in r.items()})
+
+
+if __name__ == "__main__" and "--decompose" in sys.argv:
+    decompose()
+elif __name__ == "__main__":
     B = int(sys.argv[1]) if len(sys.argv) > 1 else 2000
     procs = int(sys.argv[2]) if len(sys.argv) > 2 else 12
     y = np.loadtxt(f"{OUT}/data/grid_y.csv")
@@ -331,3 +361,4 @@ if __name__ == "__main__":
         w.writeheader(); w.writerows(summary)
     for r in summary:
         print({a: (round(b, 4) if isinstance(b, float) else b) for a, b in r.items()})
+    decompose()
