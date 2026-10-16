@@ -1,21 +1,81 @@
-k,seed,package_size,transcription_size,identical,uniforms_used
-61,1,61,61,True,6536
-61,2,61,61,True,6476
-61,3,61,61,True,6588
-61,4,61,61,True,6301
-61,5,61,61,True,6438
-61,6,61,61,True,6308
-61,7,61,61,True,6580
-61,8,61,61,True,6421
-61,9,61,61,True,6693
-61,10,61,61,True,6382
-183,1,183,183,True,6728
-183,2,183,183,True,6678
-183,3,183,183,True,6788
-183,4,183,183,True,6636
-183,5,183,183,True,6703
-183,6,183,183,True,6666
-183,7,183,183,True,6816
-183,8,183,183,True,6696
-183,9,183,183,True,6745
-183,10,183,183,True,6745
+balancing,k,seed,package_size,transcription_size,identical,uniforms_used
+"61x61 grid, rows and columns",61,1,61,61,True,6536
+"61x61 grid, rows and columns",61,2,61,61,True,6476
+"61x61 grid, rows and columns",61,3,61,61,True,6588
+"61x61 grid, rows and columns",61,4,61,61,True,6301
+"61x61 grid, rows and columns",61,5,61,61,True,6438
+"61x61 grid, rows and columns",61,6,61,61,True,6308
+"61x61 grid, rows and columns",61,7,61,61,True,6580
+"61x61 grid, rows and columns",61,8,61,61,True,6421
+"61x61 grid, rows and columns",61,9,61,61,True,6693
+"61x61 grid, rows and columns",61,10,61,61,True,6382
+"61x61 grid, rows and columns",183,1,183,183,True,6728
+"61x61 grid, rows and columns",183,2,183,183,True,6678
+"61x61 grid, rows and columns",183,3,183,183,True,6788
+"61x61 grid, rows and columns",183,4,183,183,True,6636
+"61x61 grid, rows and columns",183,5,183,183,True,6703
+"61x61 grid, rows and columns",183,6,183,183,True,6666
+"61x61 grid, rows and columns",183,7,183,183,True,6816
+"61x61 grid, rows and columns",183,8,183,183,True,6696
+"61x61 grid, rows and columns",183,9,183,183,True,6745
+"61x61 grid, rows and columns",183,10,183,183,True,6745
+"2^7, one-variable margins",8,1,8,8,True,237
+"2^7, one-variable margins",8,2,8,8,True,237
+"2^7, one-variable margins",8,3,8,8,True,232
+"2^7, one-variable margins",8,4,8,8,True,216
+"2^7, one-variable margins",8,5,8,8,True,228
+"2^7, one-variable margins",8,6,8,8,True,237
+"2^7, one-variable margins",8,7,8,8,True,234
+"2^7, one-variable margins",8,8,8,8,True,234
+"2^7, one-variable margins",8,9,8,8,True,224
+"2^7, one-variable margins",8,10,8,8,True,217
+"2^7, one-variable margins",16,1,16,16,True,236
+"2^7, one-variable margins",16,2,16,16,True,233
+"2^7, one-variable margins",16,3,16,16,True,231
+"2^7, one-variable margins",16,4,16,16,True,218
+"2^7, one-variable margins",16,5,16,16,True,227
+"2^7, one-variable margins",16,6,16,16,True,217
+"2^7, one-variable margins",16,7,16,16,True,235
+"2^7, one-variable margins",16,8,16,16,True,217
+"2^7, one-variable margins",16,9,16,16,True,227
+"2^7, one-variable margins",16,10,16,16,True,221
+"2^7, one-variable margins",32,1,32,32,True,203
+"2^7, one-variable margins",32,2,32,32,True,219
+"2^7, one-variable margins",32,3,32,32,True,207
+"2^7, one-variable margins",32,4,32,32,True,201
+"2^7, one-variable margins",32,5,32,32,True,207
+"2^7, one-variable margins",32,6,32,32,True,214
+"2^7, one-variable margins",32,7,32,32,True,208
+"2^7, one-variable margins",32,8,32,32,True,222
+"2^7, one-variable margins",32,9,32,32,True,218
+"2^7, one-variable margins",32,10,32,32,True,198
+"3^5, one-variable margins",9,1,9,9,True,459
+"3^5, one-variable margins",9,2,9,9,True,455
+"3^5, one-variable margins",9,3,9,9,True,452
+"3^5, one-variable margins",9,4,9,9,True,440
+"3^5, one-variable margins",9,5,9,9,True,453
+"3^5, one-variable margins",9,6,9,9,True,446
+"3^5, one-variable margins",9,7,9,9,True,464
+"3^5, one-variable margins",9,8,9,9,True,454
+"3^5, one-variable margins",9,9,9,9,True,463
+"3^5, one-variable margins",9,10,9,9,True,453
+"3^5, one-variable margins",27,1,27,27,True,433
+"3^5, one-variable margins",27,2,27,27,True,430
+"3^5, one-variable margins",27,3,27,27,True,432
+"3^5, one-variable margins",27,4,27,27,True,428
+"3^5, one-variable margins",27,5,27,27,True,434
+"3^5, one-variable margins",27,6,27,27,True,427
+"3^5, one-variable margins",27,7,27,27,True,431
+"3^5, one-variable margins",27,8,27,27,True,423
+"3^5, one-variable margins",27,9,27,27,True,433
+"3^5, one-variable margins",27,10,27,27,True,431
+"3^5, one-variable margins",81,1,81,81,True,376
+"3^5, one-variable margins",81,2,81,81,True,371
+"3^5, one-variable margins",81,3,81,81,True,396
+"3^5, one-variable margins",81,4,81,81,True,373
+"3^5, one-variable margins",81,5,81,81,True,378
+"3^5, one-variable margins",81,6,81,81,True,378
+"3^5, one-variable margins",81,7,81,81,True,375
+"3^5, one-variable margins",81,8,81,81,True,386
+"3^5, one-variable margins",81,9,81,81,True,374
+"3^5, one-variable margins",81,10,81,81,True,386

@@ -35,7 +35,9 @@ def project_out(sp, mask, y):
 
 
 def responses(sp, seed):
-    """Four responses with different shares of additive (main-effect) variance."""
+    """Five responses with different shares of additive (main-effect) variance.  The higher-order response
+    adds three- and four-variable interactions (products of the centred codes, coefficients drawn after
+    the noise, so that the other four responses do not depend on them)."""
     rng = np.random.default_rng(seed)
     X = sp.vecs.astype(float) - (sp.p - 1) / 2  # centred level codes
     m = sp.m
@@ -47,16 +49,23 @@ def responses(sp, seed):
         if sp.p > 2:
             main += 0.3 * rng.normal() * (X[:, i] ** 2 - (X[:, i] ** 2).mean())
     noise = rng.normal(size=sp.N)
+    high = np.zeros(sp.N)
+    for order in (3, 4):
+        for J in itertools.combinations(range(m), order):
+            high += rng.normal() * np.prod(X[:, list(J)], axis=1)
     M = main_effect_set(sp, coordinate_factors(m))
     inter = project_out(sp, M, inter)  # pure interaction: no main-effect component
     inter /= inter.std()
     main /= main.std()
     noise_res = project_out(sp, M, noise)
+    high = project_out(sp, M, high)  # products of three or four centred codes have no main effects
+    high /= high.std()
     return {
         "additive": main + 0.3 * noise,
         "mixed": main + 0.8 * inter + 0.3 * noise,
         "interaction": inter + 0.3 * noise_res,
         "noise": noise,
+        "higher-order": main + 0.8 * high + 0.3 * noise,
     }
 
 

@@ -1,8 +1,11 @@
 # Monte Carlo comparison: cube method (equal probabilities) balancing on level indicators.
-# Usage: Rscript mc_cube.R <X.csv> <Y.csv> <q> <nfactors> <k1,k2,...> <B> <out.csv> [seed]
+# Usage: Rscript mc_cube.R <X.csv> <Y.csv> <q> <nfactors> <k1,k2,...> <B> <out.csv> [seed] [samples.txt.gz]
 # X.csv: N x (nfactors*(q-1)) 0/1 indicators (level 0 of each factor dropped).
 # Also splits each squared error into the parts due to the main effects (zero for balanced samples),
-# the residual and their cross term, y - Ybar = m + rho with m the population main-effects fit.
+# the residual and their cross term, y - Ybar = mu + rho with mu the population main-effects fit, and
+# records the main-effect weight t_M = sum over main-effect frequencies of |eta_s(u)|^2, which for the
+# one-variable stratifications is (q/k^2) times the sum of squared deviations of the level counts from k/q.
+# With a ninth argument, writes the selected units of every draw (one line per draw) to that file.
 .libPaths(c("~/R/library", .libPaths()))
 suppressMessages(library(BalancedSampling))
 a <- commandArgs(trailingOnly = TRUE)
@@ -11,6 +14,8 @@ Y <- as.matrix(read.csv(a[2], header = TRUE))
 q <- as.integer(a[3]); nf <- as.integer(a[4])
 ks <- as.integer(strsplit(a[5], ",")[[1]]); B <- as.integer(a[6]); out <- a[7]
 seed <- if (length(a) >= 8) as.integer(a[8]) else 1L
+samples_out <- if (length(a) >= 9) a[9] else NA
+if (!is.na(samples_out)) { con <- gzfile(samples_out, "w") }
 set.seed(seed)
 N <- nrow(X)
 Z <- cbind(1, X)
@@ -20,7 +25,7 @@ res <- list()
 for (k in ks) {
   prob <- rep(k / N, N)
   xb <- cbind(prob, X)
-  means <- matrix(NA_real_, B, ncol(Y)); exact <- logical(B); maxdev <- numeric(B)
+  means <- matrix(NA_real_, B, ncol(Y)); exact <- logical(B); maxdev <- numeric(B); tM <- numeric(B)
   em <- er <- matrix(NA_real_, B, ncol(Y))
   t0 <- proc.time()[3]
   for (b in 1:B) {
@@ -35,6 +40,8 @@ for (k in ks) {
     dev <- abs(cnt - k / q)
     exact[b] <- (length(s) == k) && all(dev < 1e-9)
     maxdev[b] <- max(dev)
+    tM[b] <- q / k^2 * sum((cnt - k / q)^2)
+    if (!is.na(samples_out)) writeLines(paste(c(k, sort(s) - 1L), collapse = " "), con)
   }
   el <- proc.time()[3] - t0
   ybar <- colMeans(Y)
@@ -48,8 +55,10 @@ for (k in ks) {
                                          B = B, sec_per_sample = el / B,
                                          main = mean(em[, j]^2), main_se = sd(em[, j]^2) / sqrt(B),
                                          resid = mean(er[, j]^2), resid_se = sd(er[, j]^2) / sqrt(B),
-                                         cross = mean(2 * em[, j] * er[, j]), cross_se = sd(2 * em[, j] * er[, j]) / sqrt(B))
+                                         cross = mean(2 * em[, j] * er[, j]), cross_se = sd(2 * em[, j] * er[, j]) / sqrt(B),
+                                         tM = mean(tM), tM_se = sd(tM) / sqrt(B), tau = mean(tM) / (N / k - 1))
   }
   cat(sprintf("k=%d: exact balance in %.3f of %d samples; %.4f s/sample\n", k, mean(exact), B, el / B))
 }
+if (!is.na(samples_out)) close(con)
 write.csv(do.call(rbind, res), out, row.names = FALSE)

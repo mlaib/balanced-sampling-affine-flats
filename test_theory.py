@@ -325,6 +325,66 @@ for (p_, m_, h_, r_) in [(2, 4, 2, 1), (3, 3, 1, 2), (5, 2, 1, 2)]:
     check(np.allclose(ev, pred), f"eigenvalues of Delta p={p_} m={m_}")
 print("Eigenvalues of the design variance matrix equal (k^2/N) w(u): done")
 
+# Proposition 3 (main effects bounded by C sigma^2): for translation-invariant designs the worst case over
+# Y_C is sigma^2 (C max_M w + max_R w), attained by y* = c1 Re chi_u1 + c2 Re chi_u2; for every design some
+# translate of y* has mean squared error at least sigma^2 {C t_M/d + (N/k - 1 - t_M)/|R|}.
+def mse_of(design, y):
+    ybar = y.mean()
+    return sum(pr * (y[s].mean() - ybar) ** 2 for pr, s in design)
+
+
+def worst_response(sp, M, R, w, C):
+    uM = np.nonzero(M)[0][np.argmax(w[M])]
+    uR = np.nonzero(R)[0][np.argmax(w[R])]
+    y = np.zeros(sp.N)
+    for u, target in ((uM, C), (uR, 1.0)):
+        part = np.cos(2 * np.pi * (sp.vecs @ sp.vecs[u] % sp.p) / sp.p)
+        pw = sp.fourier_power(part)
+        y += part * np.sqrt(target / pw[1:].sum())
+    return y
+
+
+for trial in range(60):
+    p_, m_ = [(2, 3), (2, 4), (3, 2), (3, 3), (5, 2)][trial % 5]
+    sp = Space(p_, m_)
+    fac = [np.array([[1] + [0] * (m_ - 1)]), np.array([[0] * (m_ - 1) + [1]])][: 1 + trial % 2]
+    M = main_effect_set(sp, fac)
+    R = ~M
+    R[0] = False
+    d_, nR = int(M.sum()), int(R.sum())
+    k = p_ ** (1 + trial % (m_ - 1)) if m_ > 2 else p_
+    T = sp.N / k - 1
+    # a design that is not translation invariant and not balanced: a few random samples of size k
+    supp = [rng.choice(sp.N, size=k, replace=False) for _ in range(1 + trial % 4)]
+    pr_ = rng.random(len(supp))
+    design = list(zip(pr_ / pr_.sum(), supp))
+    w = np.zeros(sp.N)
+    for pr, s in design:
+        eta = np.abs(np.exp(2j * np.pi * (sp.vecs @ sp.vecs[s].T % p_) / p_).sum(axis=1) / k) ** 2
+        w += pr * eta
+    tM = w[M].sum()
+    check(abs(w[1:].sum() - T) < 1e-9, f"trace identity for an arbitrary design p={p_} m={m_}")
+    translated = [(pr, (s_vec + a) % p_) for pr, s_vec in [(pr, sp.vecs[s]) for pr, s in design]
+                  for a in sp.vecs]
+    tinv = [(pr / sp.N, np.array([sp.code(x) for x in pts])) for pr, pts in translated]
+    for C in (0.25, 1.0, 4.0):
+        y = worst_response(sp, M, R, w, C)
+        check(abs(sum(sp.fourier_power(y)[M]) - C) < 1e-9 and abs(sum(sp.fourier_power(y)[R]) - 1) < 1e-9,
+              f"worst response lies in Y_C p={p_} m={m_}")
+        sup_ti = C * w[M].max() + w[R].max()
+        check(abs(mse_of(tinv, y) - sup_ti) < 1e-9, f"Proposition 3(b): worst case of the translated design p={p_} m={m_}")
+        for _ in range(20):          # random responses in Y_C never exceed it
+            Z = np.fft.fftn(rng.normal(size=(p_,) * m_)).reshape(-1)
+            zM = np.real(np.fft.ifftn(np.where(M, Z, 0).reshape((p_,) * m_))).reshape(-1)   # main-effect part
+            zR = np.real(np.fft.ifftn(np.where(R, Z, 0).reshape((p_,) * m_))).reshape(-1)   # residual part
+            yz = zM * np.sqrt(C * rng.random() / sp.fourier_power(zM).sum()) \
+                + zR * np.sqrt(rng.random() / sp.fourier_power(zR).sum())
+            check(mse_of(tinv, yz) <= sup_ti + 1e-9, f"Proposition 3(b): no response in Y_C exceeds it p={p_} m={m_}")
+        lower = C * tM / d_ + (T - tM) / nR
+        best = max(mse_of(design, np.array([y[sp.code((x + a) % p_)] for x in sp.vecs])) for a in sp.vecs)
+        check(best >= lower - 1e-9, f"Proposition 3(a): lower bound for an arbitrary design p={p_} m={m_}")
+print("Proposition 3 (main effects bounded by C sigma^2): done")
+
 print("\nchecks executed per statement:")
 for k_, v_ in counts.items():
     print(f"  {v_:6d}  {k_}")

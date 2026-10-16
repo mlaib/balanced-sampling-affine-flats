@@ -1,9 +1,16 @@
-| Design ($k=183$, $r=3$) | Balanced on | Coefficient of variation of $v$ | Coverage of the nominal 95% interval | Share of samples with $v=0$ |
-|---|---|---|---|---|
-| Equal-weight coset design | $\mathcal S_1$ | 7.59 | 92.9% | 0.019% |
-| Equal-weight coset design | $\mathcal S_2$ | 3.66 | 93.0% | 0.019% |
-| Equal-weight coset design | $\mathcal S_3$ | 3.45 | 93.0% | 0.019% |
-| Equal-weight coset design | $\mathcal S_4$ | 2.93 | 92.9% | 0.020% |
-| Coset design, best 4 lattices | $\mathcal S_4$ | 1.05 | 94.6% | 0.025% |
-| Coset design, best 8 lattices | $\mathcal S_4$ | 0.99 | 94.1% | 0.029% |
-| Coset design, best 16 lattices | $\mathcal S_4$ | 1.03 | 93.5% | 0.022% |
+| Design | Balanced on | Evaluation | $k=61$ | $k=183$ | Residual worst-case factor | Main-effect weight share $\tau$ on $\mathcal S_4$, $k=61$ / $k=183$ | Exactly balanced on $\mathcal S_2$ / $\mathcal S_4$, $k=61$ | Exactly balanced on $\mathcal S_2$ / $\mathcal S_4$, $k=183$ |
+|---|---|---|---|---|---|---|---|---|
+| Simple random sampling | none | exact | 1 | 1 | infinite | 0.0645 / 0.0645 | below $10^{-6}$ / below $10^{-6}$ | below $10^{-6}$ / below $10^{-6}$ |
+| Equal-weight coset design | $\mathcal S_1$ (rows) | exact | 0.7171 | 0.7171 | 1 | 0.0492 / 0.0492 | 0.984 / 0.951 | 0.984 / 0.951 |
+| Equal-weight coset design | $\mathcal S_2$ (rows, columns) | exact | 0.1621 | 0.1621 | 1 | 0.0333 / 0.0333 | 1.000 / 0.967 | 1.000 / 0.967 |
+| Equal-weight coset design | $\mathcal S_3$ ($\mathcal S_2$ + anti-diagonals) | exact | 0.1197 | 0.1197 | 1 | 0.0169 / 0.0169 | 1.000 / 0.983 | 1.000 / 0.983 |
+| Equal-weight coset design | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | exact | 0.0878 | 0.0878 | 1 | 0 / 0 | 1.000 / 1.000 | 1.000 / 1.000 |
+| Coset design, best 4 lattices | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | exact | 0.0102 | 0.0102 | 14.50 | 0 / 0 | 1.000 / 1.000 | 1.000 / 1.000 |
+| Coset design, best 8 lattices | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | exact | 0.0113 | 0.0113 | 7.25 | 0 / 0 | 1.000 / 1.000 | 1.000 / 1.000 |
+| Coset design, best 16 lattices | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | exact | 0.0118 | 0.0118 | 3.62 | 0 / 0 | 1.000 / 1.000 | 1.000 / 1.000 |
+| Cube method | $\mathcal S_2$ (rows, columns) | Monte Carlo, 2000 draws (s.e.) | 0.2220 (0.0070) | 0.1925 (0.0061) | infinite | 0.0357 / 0.0346 | 0.041 (0.004) / none | none / none |
+| Cube method | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | Monte Carlo, 400 draws (s.e.) | 0.4110 (0.0258) | 0.3121 (0.0237) | infinite | 0.0318 / 0.0267 | none / none | none / none |
+| Local pivotal method | none (spatial spread, planar distances) | Monte Carlo, 20 000 draws (s.e.) | 0.0976 (0.0010) | 0.0413 (0.0004) | infinite | 0.0590 / 0.0550 | none / none | none / none |
+| Local pivotal method | none (spatial spread, wrapped distances) | Monte Carlo, 20 000 draws (s.e.) | 0.1376 (0.0014) | 0.0661 (0.0007) | infinite | 0.0588 / 0.0549 | none / none | none / none |
+| Local cube method | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) and spread | Monte Carlo, 500 draws (s.e.) | 0.4349 (0.0284) | 0.5146 (0.0368) | infinite | 0.0373 / 0.0374 | none / none | none / none |
+| Cube method, flight continued to a vertex | $\mathcal S_2$ (rows, columns) | Monte Carlo, 2000 draws (s.e.) | 0.1581 (0.0050) | 0.1693 (0.0053) | finite, not computed | 0.0336 / 0.0334 | all / none | all / none |
