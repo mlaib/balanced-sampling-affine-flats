@@ -304,7 +304,12 @@ def decompose():
             S = [np.array(r["sample"].split(), dtype=int) for r in rows if int(r["k"]) == k and r["landing"] == name]
             em = np.array([m[s_].mean() for s_ in S])
             er = np.array([rho[s_].mean() for s_ in S])
-            row = {"k": k, "landing": name, "B": len(S)}
+            est = np.array([float(r["estimate"]) for r in rows if int(r["k"]) == k and r["landing"] == name])
+            # the parts add up to the squared error of every draw, and the total is the reported design effect
+            assert np.abs((em + er) ** 2 - (est - Ybar) ** 2).max() < 1e-9
+            row = {"k": k, "landing": name, "B": len(S),
+                   "bias": float(est.mean() - Ybar), "bias_se": float(est.std(ddof=1) / np.sqrt(len(S))),
+                   "max_drawwise_identity_error": float(np.abs(em ** 2 + er ** 2 + 2 * em * er - (est - Ybar) ** 2).max())}
             for part, v in (("main", em ** 2), ("residual", er ** 2), ("cross", 2 * em * er), ("total", (em + er) ** 2)):
                 row[f"deff_{part}"] = v.mean() / srs
                 row[f"deff_{part}_se"] = v.std(ddof=1) / np.sqrt(len(S)) / srs
