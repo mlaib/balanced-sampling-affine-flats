@@ -1,4 +1,4 @@
-| Frame | $k$ | Response | Coset, uniform $\nu$ | Coset, $r=q$ | Lattice sampling | Cube method | Cube, flight continued |
+| Frame | $k$ | Response | Uniform | $r=q$ | Lattice | Cube | Cube, continued |
 |---|---|---|---|---|---|---|---|
 | $2^7$ | 8 | additive | 0.999 (0.990, 1.013) | 0.999 (0.973, 1.033) | 0.945 (0.491, 1.545) | 1.292 (1.211, 1.399) | 1.285 (1.208, 1.393) |
 | $2^7$ | 8 | mixed | 1.101 (1.098, 1.104) | 1.253 (1.245, 1.261) | 0.110 (0.055, 0.190) | 1.102 (1.081, 1.124) | 1.104 (1.084, 1.126) |

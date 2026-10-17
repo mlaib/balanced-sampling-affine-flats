@@ -1,7 +1,9 @@
-"""Tables 1-5 and A1 of the manuscript (Markdown) from results/, with Monte Carlo standard errors and exact/MC labels.
+"""Tables 2-7 and S1 of the manuscript (Markdown) from results/, with Monte Carlo standard errors and exact/MC labels.
 
-Writes results/table1.md to results/table5.md, results/tableA1.md and results/grid_balance_shares.json (exact
-shares of grid coset samples that are balanced on S2 and on S4).
+Writes results/table2.md to results/table7.md, results/tableS1.md and results/grid_balance_shares.json (exact
+shares of grid coset samples that are balanced on S2 and on S4).  Table 1 of the manuscript (prior work) is not
+computed.  The functions keep the names of an earlier numbering: table1 builds Table 2, table2 Table 3, table3
+Table 4, table4 the full grid table that grid_tables splits into Tables 5 and 6, table5 Table 7 and tableA1 Table S1.
 """
 import csv, glob, json, math, os
 import numpy as np
@@ -48,7 +50,7 @@ def factorial_inputs():
 def table2():
     """Design effects of the Horvitz-Thompson mean; the cube variants from their stored samples (ht_factorial.py)."""
     ex, lat, cube, cont, ht = factorial_inputs()
-    out = ["| Frame | $k$ | Response | $R^2_{\\mathrm{adj}}$ | Cube method, MC (s.e.) | Cube, flight continued, MC (s.e.) | Coset, uniform $\\nu$ | Coset, minimax $\\nu$ | Coset, $r=q$ | Lattice sampling (strength) |",
+    out = ["| Frame | $k$ | Response | $R^2_{\\mathrm{adj}}$ | Cube | Cube, continued | Uniform | Minimax | $r=q$ | Lattice |",
            "|---|---|---|---|---|---|---|---|---|---|"]
     order = {n: i for i, n in enumerate(RESPONSES)}
     for r in sorted(ex, key=lambda r: (r["p"], int(r["k"]), order[r["response"]])):
@@ -68,7 +70,7 @@ def table3():
     _, lat, cube, cont, ht = factorial_inputs()
     info = json.load(open(f"{OUT}/results/factorial_designs.json"))
     wc = {(str(i["p"]), str(i["k"]), i["design"]): i["max_w_over_flat"] for i in info}
-    out = ["| Frame | $k$ | Cube: exactly balanced, package / flight continued, MC (s.e.) | Cube: draws of size $k\\pm1$ in 20 000, package / flight continued | Cube: main-effect weight share $\\tau$, package / flight continued, MC | Worst-case factor: coset, uniform $\\nu$ | Coset, $r=q$ | Lattice sampling |",
+    out = ["| Frame | $k$ | Exactly balanced | Size $k\\pm1$ | $\\tau$ | $W$, uniform | $W$, $r=q$ | $W$, lattice |",
            "|---|---|---|---|---|---|---|---|"]
     for p, m, ks in [("2", "7", ("8", "16", "32")), ("3", "5", ("9", "27", "81"))]:
         for k in ks:
@@ -230,11 +232,39 @@ def table4(sh):
     return "\n".join(rows)
 
 
+def grid_tables(sh):
+    """Tables 5 and 6: the rows of the full grid table (table4) split into the design effects (Table 5) and the worst
+    cases, main-effect weight shares and shares of exactly balanced samples (Table 6), with short row labels."""
+    lines = table4(sh).split("\n")[2:]
+    short = {"$\\mathcal S_1$ (rows)": "$\\mathcal S_1$", "$\\mathcal S_2$ (rows, columns)": "$\\mathcal S_2$",
+             "$\\mathcal S_3$ ($\\mathcal S_2$ + anti-diagonals)": "$\\mathcal S_3$",
+             "$\\mathcal S_4$ ($\\mathcal S_3$ + diagonals)": "$\\mathcal S_4$",
+             "$\\mathcal S_4$ ($\\mathcal S_3$ + diagonals) and spread": "$\\mathcal S_4$"}
+    t5 = ["| Design | Evaluation | $k=61$ | $k=183$ |", "|---|---|---|---|"]
+    t6 = ["| Design | $W_2$ | $W_3$, $k=61$ / $k=183$ | $\\tau$, $k=61$ / $k=183$ | Exactly balanced on $\\mathcal S_2$ / $\\mathcal S_4$, $k=61$ | Same, $k=183$ |",
+          "|---|---|---|---|---|---|"]
+    for line in lines:
+        c = [x.strip() for x in line.strip().strip("|").split("|")]
+        name, bal_on, ev, d61, d183, w2, w3, tau, b61, b183 = c
+        if name == "Simple random sampling":
+            label = name
+        elif name.startswith("Local pivotal method"):
+            label = name + (", planar distances" if "planar" in bal_on else ", wrapped distances")
+        else:
+            name = {"Cube method, directions by QR factorisation": "Cube method with QR directions",
+                    "Cube method, flight continued to a vertex": "Cube method, flight continued"}.get(name, name)
+            label = f"{name}, {short[bal_on]}"
+        ev = ev.replace("Monte Carlo, ", "MC, ").replace(" draws (s.e.)", " draws").replace("; size other than $k$ in ", "; size $\\neq k$ in ")
+        t5.append(f"| {label} | {ev} | {d61} | {d183} |")
+        t6.append(f"| {label} | {w2} | {w3} | {tau} | {b61} | {b183} |")
+    return "\n".join(t5), "\n".join(t6)
+
+
 def table5():
     """Exact evaluation of the variance estimators (varest_exact.py and the grid results of study_grid.py)."""
     d = json.load(open(f"{OUT}/results/grid_exact.json"))
     name_s = {"S1 rows": "$\\mathcal S_1$", "S2 rows+cols": "$\\mathcal S_2$", "S3 +anti-diagonals": "$\\mathcal S_3$", "S4 +diagonals": "$\\mathcal S_4$"}
-    rows = ["| Population and design | $k$ | Estimator | Degrees of freedom | Coefficient of variation | Coverage of the nominal 95% interval | Share of samples with estimate 0 |",
+    rows = ["| Population and design | $k$ | Estimator | df | CV | Coverage | Zero |",
             "|---|---|---|---|---|---|---|"]
     for r in d["variance_estimation"]:
         name = "equal-weight coset design" if r["design"] == "flat" else f"best {r['design'][4:]} lattices"
@@ -262,8 +292,8 @@ def tableA1():
     rows = rd(f"{OUT}/results/replicated_populations.csv")
     get = {(r["q"], r["k"], r["response"], r["design"], r["statistic"]): r for r in rows}
     P = rows[0]["P"]
-    designs = [("coset-uniform", "Coset, uniform $\\nu$"), ("coset-replicated", "Coset, $r=q$"), ("lattice", "Lattice sampling"),
-               ("cube", "Cube method"), ("cube-continued", "Cube, flight continued")]
+    designs = [("coset-uniform", "Uniform"), ("coset-replicated", "$r=q$"), ("lattice", "Lattice"),
+               ("cube", "Cube"), ("cube-continued", "Cube, continued")]
     out = [f"| Frame | $k$ | Response | " + " | ".join(n for _, n in designs) + " |", "|---|---|---|" + "---|" * len(designs)]
     for q, m, ks in [("2", "7", ("8", "16", "32")), ("3", "5", ("9", "27", "81"))]:
         for k in ks:
@@ -279,9 +309,11 @@ def tableA1():
 if __name__ == "__main__":
     sh = grid_balance_shares()
     json.dump(sh, open(f"{OUT}/results/grid_balance_shares.json", "w"), indent=1)
-    t = {"table1": table1(), "table2": table2(), "table3": table3(), "table4": table4(sh), "table5": table5()}
+    t5, t6 = grid_tables(sh)
+    # file names follow the numbering of the manuscript, whose Table 1 (prior work) is not computed
+    t = {"table2": table1(), "table3": table2(), "table4": table3(), "table5": t5, "table6": t6, "table7": table5()}
     if os.path.exists(f"{OUT}/results/replicated_populations.csv"):
-        t["tableA1"] = tableA1()[0]
+        t["tableS1"] = tableA1()[0]
     for name, body in t.items():
         open(f"{OUT}/results/{name}.md", "w").write(body + "\n")
         print(body, "\n")

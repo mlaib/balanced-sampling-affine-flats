@@ -1,17 +1,8 @@
-| Design | Balanced on | Evaluation | $k=61$ | $k=183$ | Worst case over $\mathcal Y(\sigma^2)$ for its own $\mathcal S$ (Proposition 2) | Worst case over $\mathcal Y_1(\sigma^2)$ for $\mathcal S_4$ (Proposition 3), $k=61$ / $k=183$ | Main-effect weight share $\tau$ on $\mathcal S_4$, $k=61$ / $k=183$ | Exactly balanced on $\mathcal S_2$ / $\mathcal S_4$, $k=61$ | Exactly balanced on $\mathcal S_2$ / $\mathcal S_4$, $k=183$ |
-|---|---|---|---|---|---|---|---|---|---|
-| Simple random sampling | none | exact | 1 | 1 | 1 | 1.871 / 1.871 | 0.0645 / 0.0645 | below $10^{-6}$ / below $10^{-6}$ | below $10^{-6}$ / below $10^{-6}$ |
-| Equal-weight coset design | $\mathcal S_1$ (rows) | exact | 0.7171 | 0.7171 | 1 | 1.902 / 1.902 | 0.0492 / 0.0492 | 0.984 / 0.951 | 0.984 / 0.951 |
-| Equal-weight coset design | $\mathcal S_2$ (rows, columns) | exact | 0.1621 | 0.1621 | 1 | 1.933 / 1.933 | 0.0333 / 0.0333 | 1.000 / 0.967 | 1.000 / 0.967 |
-| Equal-weight coset design | $\mathcal S_3$ ($\mathcal S_2$ + anti-diagonals) | exact | 0.1197 | 0.1197 | 1 | 1.966 / 1.966 | 0.0169 / 0.0169 | 1.000 / 0.983 | 1.000 / 0.983 |
-| Equal-weight coset design | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | exact | 0.0878 | 0.0878 | 1 | 1 / 1 | 0 / 0 | 1.000 / 1.000 | 1.000 / 1.000 |
-| Coset design, best 4 lattices | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | exact | 0.0102 | 0.0102 | 14.50 | 14.50 / 14.50 | 0 / 0 | 1.000 / 1.000 | 1.000 / 1.000 |
-| Coset design, best 8 lattices | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | exact | 0.0113 | 0.0113 | 7.25 | 7.25 / 7.25 | 0 / 0 | 1.000 / 1.000 | 1.000 / 1.000 |
-| Coset design, best 16 lattices | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | exact | 0.0118 | 0.0118 | 3.62 | 3.62 / 3.62 | 0 / 0 | 1.000 / 1.000 | 1.000 / 1.000 |
-| Cube method | $\mathcal S_2$ (rows, columns) | Monte Carlo, 2000 draws (s.e.); size other than $k$ in 0 / 0 | 0.2220 (0.0070) | 0.1925 (0.0061) | infinite | $\ge1.481$ (0.0014) / $\ge1.467$ (0.0013) | 0.0357 (0.0001) / 0.0346 (0.0001) | 0.041 (0.004) / none | none / none |
-| Cube method | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | Monte Carlo, 400 draws (s.e.); size other than $k$ in 324 / 369 | 3.1029 (0.2346) | 4.8221 (0.3273) | infinite | $\ge1.433$ (0.0023) / $\ge1.358$ (0.0020) | 0.0320 (0.0002) / 0.0265 (0.0001) | none / none | none / none |
-| Cube method, directions by QR factorisation | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) | Monte Carlo, 400 draws (s.e.); size other than $k$ in 0 / 0 | 0.3060 (0.0191) | 0.1604 (0.0105) | infinite | $\ge1.357$ (0.0017) / $\ge1.126$ (0.0008) | 0.0264 (0.0001) / 0.0093 (0.0001) | none / none | none / none |
-| Local pivotal method | none (spatial spread, planar distances) | Monte Carlo, 20 000 draws (s.e.) | 0.0976 (0.0010) | 0.0413 (0.0004) | not computed | $\ge1.796$ (0.0005) / $\ge1.742$ (0.0005) | 0.0590 (0.00004) / 0.0550 (0.00004) | none / none | none / none |
-| Local pivotal method | none (spatial spread, wrapped distances) | Monte Carlo, 20 000 draws (s.e.) | 0.1376 (0.0014) | 0.0661 (0.0007) | not computed | $\ge1.794$ (0.0005) / $\ge1.741$ (0.0005) | 0.0588 (0.00004) / 0.0549 (0.00004) | none / none | none / none |
-| Local cube method | $\mathcal S_4$ ($\mathcal S_3$ + diagonals) and spread | Monte Carlo, 500 draws (s.e.); size other than $k$ in 437 / 470 | 4.5266 (0.2566) | 9.2603 (0.5823) | infinite | $\ge1.503$ (0.0024) / $\ge1.505$ (0.0025) | 0.0372 (0.0002) / 0.0374 (0.0002) | none / none | none / none |
-| Cube method, flight continued to a vertex | $\mathcal S_2$ (rows, columns) | Monte Carlo, 2000 draws (s.e.) | 0.1581 (0.0050) | 0.1693 (0.0053) | finite, not computed | $\ge1.453$ (0.0013) / $\ge1.451$ (0.0013) | 0.0336 (0.0001) / 0.0334 (0.0001) | all / none | all / none |
+| Frame | $k$ | Exactly balanced | Size $k\pm1$ | $\tau$ | $W$, uniform | $W$, $r=q$ | $W$, lattice |
+|---|---|---|---|---|---|---|---|
+| $2^7$ | 8 | 0.175 (0.003) / 0.179 (0.003) | 6 / 8 | 0.0069 / 0.0069 | 1.114 | 1.287 | 8.00 |
+| $2^7$ | 16 | 0.174 (0.003) / 0.192 (0.003) | 10 / 11 | 0.0037 / 0.0036 | 1.046 | 1.114 | 17.14 |
+| $2^7$ | 32 | 0.185 (0.003) / 0.206 (0.003) | 6 / 3 | 0.0021 / 0.0020 | 1.015 | 1.046 | 40.00 |
+| $3^5$ | 9 | 0.117 (0.002) / 0.119 (0.002) | 1 / 4 | 0.0055 / 0.0054 | 1.102 | 1.450 | 4.46 |
+| $3^5$ | 27 | 0.116 (0.002) / 0.128 (0.002) | 4 / 5 | 0.0020 / 0.0019 | 1.024 | 1.102 | 7.25 |
+| $3^5$ | 81 | 0.126 (0.002) / 0.162 (0.003) | 2 / 3 | 0.0008 / 0.0008 | 1.000 | 1.024 | 7.25 |

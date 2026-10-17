@@ -1,20 +1,17 @@
-| Population and design | $k$ | Estimator | Degrees of freedom | Coefficient of variation | Coverage of the nominal 95% interval | Share of samples with estimate 0 |
-|---|---|---|---|---|---|---|
-| Grid, equal-weight coset design, $\mathcal S_1$ | 183 | random groups | 2 | 7.59 | 92.9% | 0.019% |
-| Grid, equal-weight coset design, $\mathcal S_2$ | 183 | random groups | 2 | 3.66 | 93.0% | 0.019% |
-| Grid, equal-weight coset design, $\mathcal S_3$ | 183 | random groups | 2 | 3.45 | 93.0% | 0.019% |
-| Grid, equal-weight coset design, $\mathcal S_4$ | 183 | random groups | 2 | 2.93 | 92.9% | 0.020% |
-| Grid, best 4 lattices, $\mathcal S_4$ | 183 | random groups | 2 | 1.05 | 94.6% | 0.025% |
-| Grid, best 8 lattices, $\mathcal S_4$ | 183 | random groups | 2 | 0.99 | 94.1% | 0.029% |
-| Grid, best 16 lattices, $\mathcal S_4$ | 183 | random groups | 2 | 1.03 | 93.5% | 0.022% |
-| Grid, equal-weight coset design, $\mathcal S_1$ | 183 | regression | 122 | 0.36 | 96.5% | 0 |
-| $2^7$, $C(h-1,\nu,q)$, five responses | 8 | random groups | 1 | 1.42 to 1.48 | 93.9% to 95.0% | 0 |
-| $2^7$, $C(h-1,\nu,q)$, five responses | 16 | random groups | 1 | 1.42 to 1.72 | 92.1% to 95.0% | 0 |
-| $2^7$, $C(h-1,\nu,q)$, five responses | 16 | regression | 8 to 11 | 0.45 to 0.48 | 92.5% to 95.2% | 0 |
-| $2^7$, $C(h-1,\nu,q)$, five responses | 32 | random groups | 1 | 1.42 to 2.09 | 90.5% to 95.1% | 0 |
-| $2^7$, $C(h-1,\nu,q)$, five responses | 32 | regression | 24 to 26 | 0.25 to 0.28 | 91.0% to 95.2% | 0 |
-| $3^5$, $C(h-1,\nu,q)$, five responses | 9 | random groups | 2 | 0.99 to 1.04 | 95.0% to 95.7% | 0 |
-| $3^5$, $C(h-1,\nu,q)$, five responses | 27 | random groups | 2 | 0.99 to 1.27 | 90.7% to 95.2% | 0 |
-| $3^5$, $C(h-1,\nu,q)$, five responses | 27 | regression | 16 to 20 | 0.34 to 0.48 | 92.5% to 95.0% | 0 |
-| $3^5$, $C(h-1,\nu,q)$, five responses | 81 | random groups | 2 | 0.99 to 1.89 | 89.1% to 95.2% | 0 |
-| $3^5$, $C(h-1,\nu,q)$, five responses | 81 | regression | 70 to 72 | 0.14 to 0.22 | 90.8% to 95.0% | 0 |
+| Design | Evaluation | $k=61$ | $k=183$ |
+|---|---|---|---|
+| Simple random sampling | exact | 1 | 1 |
+| Equal-weight coset design, $\mathcal S_1$ | exact | 0.7171 | 0.7171 |
+| Equal-weight coset design, $\mathcal S_2$ | exact | 0.1621 | 0.1621 |
+| Equal-weight coset design, $\mathcal S_3$ | exact | 0.1197 | 0.1197 |
+| Equal-weight coset design, $\mathcal S_4$ | exact | 0.0878 | 0.0878 |
+| Coset design, best 4 lattices, $\mathcal S_4$ | exact | 0.0102 | 0.0102 |
+| Coset design, best 8 lattices, $\mathcal S_4$ | exact | 0.0113 | 0.0113 |
+| Coset design, best 16 lattices, $\mathcal S_4$ | exact | 0.0118 | 0.0118 |
+| Cube method, $\mathcal S_2$ | MC, 2000 draws; size $\neq k$ in 0 / 0 | 0.2220 (0.0070) | 0.1925 (0.0061) |
+| Cube method, $\mathcal S_4$ | MC, 400 draws; size $\neq k$ in 324 / 369 | 3.1029 (0.2346) | 4.8221 (0.3273) |
+| Cube method with QR directions, $\mathcal S_4$ | MC, 400 draws; size $\neq k$ in 0 / 0 | 0.3060 (0.0191) | 0.1604 (0.0105) |
+| Local pivotal method, planar distances | MC, 20 000 draws | 0.0976 (0.0010) | 0.0413 (0.0004) |
+| Local pivotal method, wrapped distances | MC, 20 000 draws | 0.1376 (0.0014) | 0.0661 (0.0007) |
+| Local cube method, $\mathcal S_4$ | MC, 500 draws; size $\neq k$ in 437 / 470 | 4.5266 (0.2566) | 9.2603 (0.5823) |
+| Cube method, flight continued, $\mathcal S_2$ | MC, 2000 draws | 0.1581 (0.0050) | 0.1693 (0.0053) |
