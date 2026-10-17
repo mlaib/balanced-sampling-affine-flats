@@ -1,0 +1,37 @@
+population,stratifications,k,draws,row_reduction,n,size_other_than_k,size_min,size_max
+2^7,7,8,stored draws with size other than k,package,9,9,7,9
+2^7,7,8,stored draws with size other than k,tolerant,9,0,8,8
+2^7,7,8,300 other draws,package,300,0,8,8
+2^7,7,8,300 other draws,tolerant,300,0,8,8
+2^7,7,16,stored draws with size other than k,package,9,9,15,17
+2^7,7,16,stored draws with size other than k,tolerant,9,0,16,16
+2^7,7,16,300 other draws,package,300,0,16,16
+2^7,7,16,300 other draws,tolerant,300,0,16,16
+2^7,7,32,stored draws with size other than k,package,4,4,33,33
+2^7,7,32,stored draws with size other than k,tolerant,4,0,32,32
+2^7,7,32,300 other draws,package,300,0,32,32
+2^7,7,32,300 other draws,tolerant,300,0,32,32
+3^5,5,9,stored draws with size other than k,package,5,5,8,10
+3^5,5,9,stored draws with size other than k,tolerant,5,0,9,9
+3^5,5,9,300 other draws,package,300,0,9,9
+3^5,5,9,300 other draws,tolerant,300,0,9,9
+3^5,5,27,stored draws with size other than k,package,1,1,26,26
+3^5,5,27,stored draws with size other than k,tolerant,1,0,27,27
+3^5,5,27,300 other draws,package,300,0,27,27
+3^5,5,27,300 other draws,tolerant,300,0,27,27
+3^5,5,81,stored draws with size other than k,package,3,3,80,82
+3^5,5,81,stored draws with size other than k,tolerant,3,0,81,81
+3^5,5,81,300 other draws,package,300,0,81,81
+3^5,5,81,300 other draws,tolerant,300,0,81,81
+19x19 grid,2,38,seeds 0 to 19,package,20,0,38,38
+19x19 grid,2,38,seeds 0 to 19,tolerant,20,0,38,38
+19x19 grid,2,76,seeds 0 to 19,package,20,0,76,76
+19x19 grid,2,76,seeds 0 to 19,tolerant,20,0,76,76
+19x19 grid,3,38,seeds 0 to 19,package,20,9,36,39
+19x19 grid,3,38,seeds 0 to 19,tolerant,20,0,38,38
+19x19 grid,3,76,seeds 0 to 19,package,20,8,74,77
+19x19 grid,3,76,seeds 0 to 19,tolerant,20,0,76,76
+19x19 grid,4,38,seeds 0 to 19,package,20,12,34,40
+19x19 grid,4,38,seeds 0 to 19,tolerant,20,0,38,38
+19x19 grid,4,76,seeds 0 to 19,package,20,14,73,81
+19x19 grid,4,76,seeds 0 to 19,tolerant,20,0,76,76

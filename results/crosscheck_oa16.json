@@ -1,0 +1,162 @@
+[
+ {
+  "m": 5,
+  "t_enumerated": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "canonical": {
+   "0": {
+    "tuples": 294192,
+    "with_distinct_runs": 165888,
+    "profiles": 1
+   },
+   "1": {
+    "tuples": 74520,
+    "with_distinct_runs": 41472,
+    "profiles": 4
+   },
+   "2": {
+    "tuples": 74392,
+    "with_distinct_runs": 54016,
+    "profiles": 7
+   },
+   "3": {
+    "tuples": 74520,
+    "with_distinct_runs": 41472,
+    "profiles": 4
+   },
+   "4": {
+    "tuples": 294192,
+    "with_distinct_runs": 165888,
+    "profiles": 1
+   }
+  },
+  "direct_samples_containing_0": 276,
+  "balanced_samples": 552,
+  "flats_containing_0": 16,
+  "direct_by_tau": {
+   "0": 1,
+   "1": 64,
+   "2": 211
+  },
+  "flat_profile_pairs": 7,
+  "distinct_profiles": 6,
+  "profiles_t12_equal_direct": true,
+  "counts_t3_equal_t1": true,
+  "count_identity_checked_for_tau": [
+   0,
+   1,
+   2
+  ],
+  "count_identity_holds": true
+ },
+ {
+  "m": 6,
+  "t_enumerated": [
+   0,
+   1,
+   2,
+   3,
+   4
+  ],
+  "canonical": {
+   "0": {
+    "tuples": 15405120,
+    "with_distinct_runs": 13824000,
+    "profiles": 7
+   },
+   "1": {
+    "tuples": 2083104,
+    "with_distinct_runs": 1852416,
+    "profiles": 10
+   },
+   "2": {
+    "tuples": 2170912,
+    "with_distinct_runs": 2024448,
+    "profiles": 14
+   },
+   "3": {
+    "tuples": 2083104,
+    "with_distinct_runs": 1852416,
+    "profiles": 10
+   },
+   "4": {
+    "tuples": 15405120,
+    "with_distinct_runs": 13824000,
+    "profiles": 7
+   }
+  },
+  "direct_samples_containing_0": 16275,
+  "balanced_samples": 65100,
+  "flats_containing_0": 175,
+  "direct_by_tau": {
+   "0": 125,
+   "1": 4288,
+   "2": 11862
+  },
+  "flat_profile_pairs": 14,
+  "distinct_profiles": 11,
+  "profiles_t12_equal_direct": true,
+  "counts_t3_equal_t1": true,
+  "count_identity_checked_for_tau": [
+   0,
+   1,
+   2
+  ],
+  "count_identity_holds": true
+ },
+ {
+  "m": 7,
+  "t_enumerated": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "canonical": {
+   "0": {
+    "tuples": 239835168,
+    "with_distinct_runs": 239044608,
+    "profiles": 14
+   },
+   "1": {
+    "tuples": 19565712,
+    "with_distinct_runs": 19450368,
+    "profiles": 18
+   },
+   "2": {
+    "tuples": 22032400,
+    "with_distinct_runs": 21959168,
+    "profiles": 23
+   },
+   "3": {
+    "tuples": 19565712,
+    "with_distinct_runs": 19450368,
+    "profiles": 18
+   }
+  },
+  "direct_samples_containing_0": 351705,
+  "balanced_samples": 2813640,
+  "flats_containing_0": 1605,
+  "direct_by_tau": {
+   "0": 4323,
+   "1": 90048,
+   "2": 257334
+  },
+  "flat_profile_pairs": 23,
+  "distinct_profiles": 19,
+  "profiles_t12_equal_direct": true,
+  "counts_t3_equal_t1": true,
+  "count_identity_checked_for_tau": [
+   0,
+   1,
+   2
+  ],
+  "count_identity_holds": true,
+  "canonical_t12_equal_stored": true
+ }
+]

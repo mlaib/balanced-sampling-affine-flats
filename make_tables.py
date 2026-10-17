@@ -41,22 +41,23 @@ def factorial_inputs():
         for r in rd(f"{OUT}/results/factorial_cube_p{p}_m{m}.csv"):
             cube[(str(p), r["k"], r["response"].replace(".", "-"))] = r     # R writes higher-order as higher.order
     cont = {(r["q"], r["k"], r["response"]): r for r in rd(f"{OUT}/results/cube_factorial.csv") if r["landing"] == "continued"}
-    return ex, lat, cube, cont
+    ht = {(r["q"], r["k"], r["source"], r["response"]): r for r in rd(f"{OUT}/results/factorial_ht.csv")}
+    return ex, lat, cube, cont, ht
 
 
 def table2():
-    ex, lat, cube, cont = factorial_inputs()
+    """Design effects of the Horvitz-Thompson mean; the cube variants from their stored samples (ht_factorial.py)."""
+    ex, lat, cube, cont, ht = factorial_inputs()
     out = ["| Frame | $k$ | Response | $R^2_{\\mathrm{adj}}$ | Cube method, MC (s.e.) | Cube, flight continued, MC (s.e.) | Coset, uniform $\\nu$ | Coset, minimax $\\nu$ | Coset, $r=q$ | Lattice sampling (strength) |",
            "|---|---|---|---|---|---|---|---|---|---|"]
     order = {n: i for i, n in enumerate(RESPONSES)}
     for r in sorted(ex, key=lambda r: (r["p"], int(r["k"]), order[r["response"]])):
-        c = cube[(r["p"], r["k"], r["response"])]
-        cc = cont[(r["p"], r["k"], r["response"])]
+        c = ht[(r["p"], r["k"], "package", r["response"])]
+        cc = ht[(r["p"], r["k"], "transcription, flight continued", r["response"])]
         L = lat[(r["p"], r["k"])]
-        vs = float(r["var_srs"])
         rr = r.get("deff_coset-uniform r=2") or r["deff_coset-uniform r=3"]
         out.append(f"| ${r['p']}^{r['m']}$ | {r['k']} | {r['response']} | {float(r['adjR2']):.3f} | "
-                   f"{float(c['mse'])/vs:.3f} ({float(c['mse_se'])/vs:.3f}) | {float(cc['deff']):.3f} ({float(cc['deff_se']):.3f}) | "
+                   f"{float(c['deff_ht']):.3f} ({float(c['deff_ht_se']):.3f}) | {float(cc['deff_ht']):.3f} ({float(cc['deff_ht_se']):.3f}) | "
                    f"{float(r['deff_coset-uniform']):.3f} | {float(r['deff_coset-minimax']):.3f} | {float(rr):.3f} | "
                    f"{float(L['deff_' + r['response']]):.3f} ({L['strength']}) |")
     return "\n".join(out)
@@ -64,18 +65,19 @@ def table2():
 
 def table3():
     """Properties of the factorial designs that do not depend on the response."""
-    _, lat, cube, cont = factorial_inputs()
+    _, lat, cube, cont, ht = factorial_inputs()
     info = json.load(open(f"{OUT}/results/factorial_designs.json"))
     wc = {(str(i["p"]), str(i["k"]), i["design"]): i["max_w_over_flat"] for i in info}
-    out = ["| Frame | $k$ | Cube: exactly balanced, package / flight continued, MC (s.e.) | Cube: main-effect weight share $\\tau$, package / flight continued, MC | Worst-case factor: coset, uniform $\\nu$ | Coset, $r=q$ | Lattice sampling |",
-           "|---|---|---|---|---|---|---|"]
+    out = ["| Frame | $k$ | Cube: exactly balanced, package / flight continued, MC (s.e.) | Cube: draws of size $k\\pm1$ in 20 000, package / flight continued | Cube: main-effect weight share $\\tau$, package / flight continued, MC | Worst-case factor: coset, uniform $\\nu$ | Coset, $r=q$ | Lattice sampling |",
+           "|---|---|---|---|---|---|---|---|"]
     for p, m, ks in [("2", "7", ("8", "16", "32")), ("3", "5", ("9", "27", "81"))]:
         for k in ks:
-            c, cc = cube[(p, k, "additive")], cont[(p, k, "additive")]
-            B = int(c["B"]); ph = float(c["prop_exact"])
+            c = ht[(p, k, "package", "additive")]
+            cc = ht[(p, k, "transcription, flight continued", "additive")]
             rr = wc.get((p, k, "coset-uniform r=2"), wc.get((p, k, "coset-uniform r=3")))
-            out.append(f"| ${p}^{m}$ | {k} | {ph:.3f} ({math.sqrt(ph * (1 - ph) / B):.3f}) / "
+            out.append(f"| ${p}^{m}$ | {k} | {float(c['share_exact']):.3f} ({float(c['share_exact_se']):.3f}) / "
                        f"{float(cc['share_exact']):.3f} ({float(cc['share_exact_se']):.3f}) | "
+                       f"{c['size_exceptions']} / {cc['size_exceptions']} | "
                        f"{float(c['tau']):.4f} / {float(cc['tau']):.4f} | {wc[(p, k, 'coset-uniform')]:.3f} | {rr:.3f} | "
                        f"{float(lat[(p, k)]['worst_case_over_flat']):.2f} |")
     return "\n".join(out)
@@ -114,24 +116,49 @@ def grid_tau_exact():
 
 
 def tau_from_samples(samples, k):
-    """Mean main-effect weight share on S4 of samples of the grid (unit code 61 i + j)."""
+    """Mean main-effect weight share on S4 of samples of the grid (unit code 61 i + j), with its standard error:
+    t_M = sum over the four line stratifications of (q sum_b n_b^2 - |s|^2)/k^2, that is sum_{u in M_S4} |eta_s(u)|^2
+    with eta_s(u) = k^-1 sum_{x in s} chi_u(x)."""
     T = q61 * q61 / k - 1
     vals = []
     for s in samples:
         i, j = np.divmod(s, q61)
-        tm = sum(((np.bincount(v % q61, minlength=q61) - k / q61) ** 2).sum() for v in (i, j, i + j, i - j)) * q61 / k ** 2
+        tm = sum(q61 * (np.bincount(v % q61, minlength=q61) ** 2).sum() - len(s) ** 2 for v in (i, j, i + j, i - j)) / k ** 2
         vals.append(tm / T)
     return float(np.mean(vals)), float(np.std(vals, ddof=1) / math.sqrt(len(vals)))
 
 
+def grid_prop3_exact(C=1.0):
+    """Worst case over Y_C(sigma^2) for S4 of the equal-weight coset designs of the grid, relative to the
+    equal-weight design for S4 (Proposition 3(b)): (C max_{M_S4} w + max_{R_S4} w) / ((Q-1)/|R_S4|); it does not
+    depend on r.  For flats w = c_nu."""
+    sp = Space(q61, 2)
+    S = grid_strata()
+    M4 = main_effect_set(sp, S["S4 +diagonals"])
+    R4 = ~M4; R4[0] = False
+    out = {}
+    for name, fac in S.items():
+        d = CosetDesign(sp, admissible_directions(sp, fac, 1), r=1)
+        c = d.coverage()
+        out[name] = float((C * c[M4].max() + c[R4].max()) / ((d.Q - 1) / R4.sum()))
+    return out, int(R4.sum()), int(M4[1:].sum())
+
+
 def table4(sh):
+    """Table 4.  Proposition 2 column: worst case over Y(sigma^2) for the design's own balancing set, relative to the
+    equal-weight design for that set.  Proposition 3 column: worst case over Y_1(sigma^2) for S4 relative to the
+    equal-weight design for S4, exact for translation-invariant designs and the plug-in lower bound
+    1 + tau (|R|/d - 1) of Proposition 3(a), with its standard error, for the Monte Carlo designs."""
     d = json.load(open(f"{OUT}/results/grid_exact.json"))
     srs = {r["k"]: r["var"] for r in d["designs"] if r["design"] == "SRS"}
     tau_ex = grid_tau_exact()
-    tau_srs = 240 / (q61 * q61 - 1)
-    rows = ["| Design | Balanced on | Evaluation | $k=61$ | $k=183$ | Residual worst-case factor | Main-effect weight share $\\tau$ on $\\mathcal S_4$, $k=61$ / $k=183$ | Exactly balanced on $\\mathcal S_2$ / $\\mathcal S_4$, $k=61$ | Exactly balanced on $\\mathcal S_2$ / $\\mathcal S_4$, $k=183$ |",
-            "|---|---|---|---|---|---|---|---|---|",
-            f"| Simple random sampling | none | exact | 1 | 1 | infinite | {tau_srs:.4f} / {tau_srs:.4f} | below $10^{{-6}}$ / below $10^{{-6}}$ | below $10^{{-6}}$ / below $10^{{-6}}$ |"]
+    f3, nR, dS = grid_prop3_exact()
+    tau_srs = dS / (q61 * q61 - 1)
+    f3_srs = 2 * nR / (q61 * q61 - 1)                    # (1 + C)|R|/(N - 1) with C = 1
+    lb = lambda t: 1 + t * (nR / dS - 1)
+    rows = ["| Design | Balanced on | Evaluation | $k=61$ | $k=183$ | Worst case over $\\mathcal Y(\\sigma^2)$ for its own $\\mathcal S$ (Proposition 2) | Worst case over $\\mathcal Y_1(\\sigma^2)$ for $\\mathcal S_4$ (Proposition 3), $k=61$ / $k=183$ | Main-effect weight share $\\tau$ on $\\mathcal S_4$, $k=61$ / $k=183$ | Exactly balanced on $\\mathcal S_2$ / $\\mathcal S_4$, $k=61$ | Exactly balanced on $\\mathcal S_2$ / $\\mathcal S_4$, $k=183$ |",
+            "|---|---|---|---|---|---|---|---|---|---|",
+            f"| Simple random sampling | none | exact | 1 | 1 | 1 | {f3_srs:.3f} / {f3_srs:.3f} | {tau_srs:.4f} / {tau_srs:.4f} | below $10^{{-6}}$ / below $10^{{-6}}$ | below $10^{{-6}}$ / below $10^{{-6}}$ |"]
     name_s = {"S1 rows": "$\\mathcal S_1$ (rows)", "S2 rows+cols": "$\\mathcal S_2$ (rows, columns)",
               "S3 +anti-diagonals": "$\\mathcal S_3$ ($\\mathcal S_2$ + anti-diagonals)", "S4 +diagonals": "$\\mathcal S_4$ ($\\mathcal S_3$ + diagonals)"}
     bal_s = {k: f"{v[0]:.3f} / {v[1]:.3f}" for k, v in sh.items()}
@@ -142,46 +169,64 @@ def table4(sh):
     for (des, strat), byk in ex.items():
         if des == "coset flat":
             name, wc, t = "Equal-weight coset design", "1", tau_ex[("coset flat", strat)]
+            w3 = "1" if abs(f3[strat] - 1) < 1e-12 else f"{f3[strat]:.3f}"
         else:
             L = int(des.split("best-")[1].split()[0])
-            name, wc, t = f"Coset design, best {L} lattices", f"{58 / L:.2f}", 0.0
+            name, wc, t, w3 = f"Coset design, best {L} lattices", f"{58 / L:.2f}", 0.0, f"{58 / L:.2f}"
         ts = "0" if t == 0 else f"{t:.4f}"
-        rows.append(f"| {name} | {name_s[strat]} | exact | {byk[61]['deff']:.4f} | {byk[183]['deff']:.4f} | {wc} | {ts} / {ts} | {bal_s[strat]} | {bal_s[strat]} |")
+        rows.append(f"| {name} | {name_s[strat]} | exact | {byk[61]['deff']:.4f} | {byk[183]['deff']:.4f} | {wc} | {w3} / {w3} | {ts} / {ts} | {bal_s[strat]} | {bal_s[strat]} |")
     mc = {}
-    for path in glob.glob(f"{OUT}/results/mc_grid/*.csv") + glob.glob(f"{OUT}/results/mc_grid_v2/lpm2torus_*.csv"):
+    for path in glob.glob(f"{OUT}/results/mc_grid_v3/*.csv"):
         for r in rd(path):
             mc.setdefault(r["design"], {})[int(r["k"])] = r
-    v2 = {}
-    for path in glob.glob(f"{OUT}/results/mc_grid_v2/*.csv"):
-        for r in rd(path):
-            v2.setdefault(r["design"], {})[int(r["k"])] = r
-    label = {"cubeS2": ("Cube method", name_s["S2 rows+cols"]), "cubeS4": ("Cube method", name_s["S4 +diagonals"]),
-             "lpm2": ("Local pivotal method", "none (spatial spread, planar distances)"),
-             "lpm2torus": ("Local pivotal method", "none (spatial spread, wrapped distances)"),
-             "lcubeS4": ("Local cube method", name_s["S4 +diagonals"] + " and spread")}
+    label = {"cubeS2": ("Cube method", name_s["S2 rows+cols"], "infinite"),
+             "cubeS4": ("Cube method", name_s["S4 +diagonals"], "infinite"),
+             "lpm2": ("Local pivotal method", "none (spatial spread, planar distances)", "not computed"),
+             "lpm2torus": ("Local pivotal method", "none (spatial spread, wrapped distances)", "not computed"),
+             "lcubeS4": ("Local cube method", name_s["S4 +diagonals"] + " and spread", "infinite")}
     share = lambda p, B: "none" if p == 0 else ("all" if p == 1 else f"{p:.3f} ({math.sqrt(p*(1-p)/B):.3f})")
     for key in ["cubeS2", "cubeS4", "lpm2", "lpm2torus", "lcubeS4"]:
-        cells, bal, taus = [], [], []
+        cells, bal, taus, w3 = [], [], [], []
         for k in (61, 183):
             r = mc.get(key, {}).get(k)
             if r is None:
-                cells.append("[TO ADD]"); bal.append("[TO ADD]"); taus.append("[TO ADD]"); continue
+                cells.append("[TO ADD]"); bal.append("[TO ADD]"); taus.append("[TO ADD]"); w3.append("[TO ADD]"); continue
             B = int(r["B"]); p2, p4 = float(r["prop_exact_S2"]), float(r["prop_exact_S4"])
-            cells.append(f"{float(r['mse'])/srs[k]:.4f} ({float(r['mse_se'])/srs[k]:.4f})")
+            cells.append(f"{float(r['mse_ht'])/srs[k]:.4f} ({float(r['mse_ht_se'])/srs[k]:.4f})")
             bal.append(f"{share(p2, B)} / {share(p4, B)}")
-            t = v2.get(key, {}).get(k)
-            taus.append(f"{float(t['tau_S4']):.4f}" if t is not None else "[TO ADD]")
+            t, tse = float(r["tau_S4"]), float(r["tau_S4_se"])
+            taus.append(f"{t:.4f} ({tse:.4f})" if tse >= 5e-5 else f"{t:.4f} ({tse:.5f})")
+            w3.append(f"$\\ge{lb(t):.3f}$ ({tse * (nR / dS - 1):.4f})")
         B_ = int(mc.get(key, {}).get(61, {}).get("B", 0))
         B_ = f"{B_:,}".replace(",", " ") if B_ >= 10000 else str(B_)
-        rows.append(f"| {label[key][0]} | {label[key][1]} | Monte Carlo, {B_} draws (s.e.) | {cells[0]} | {cells[1]} | infinite | {taus[0]} / {taus[1]} | {bal[0]} | {bal[1]} |")
+        ev = f"Monte Carlo, {B_} draws (s.e.)"
+        if key.startswith(("cube", "lcube")):           # the cube and local cube methods can miss the size by one unit
+            exc = [mc.get(key, {}).get(k, {}).get("size_exceptions", "[TO ADD]") for k in (61, 183)]
+            ev += f"; size other than $k$ in {exc[0]} / {exc[1]}"
+        rows.append(f"| {label[key][0]} | {label[key][1]} | {ev} | {cells[0]} | {cells[1]} | {label[key][2]} | {w3[0]} / {w3[1]} | {taus[0]} / {taus[1]} | {bal[0]} | {bal[1]} |")
+        if key == "cubeS4":                              # the same algorithm with QR directions (cube_grid_fixed.py)
+            fx = {int(r["k"]): r for r in rd(f"{OUT}/results/cube_grid_fixed.csv")} if os.path.exists(f"{OUT}/results/cube_grid_fixed.csv") else {}
+            if fx:
+                c_ = [f"{float(fx[k]['deff_ht']):.4f} ({float(fx[k]['deff_ht_se']):.4f})" for k in (61, 183)]
+                b_ = [f"{share(float(fx[k]['share_exact_S2']), int(fx[k]['B']))} / {share(float(fx[k]['share_exact_S4']), int(fx[k]['B']))}" for k in (61, 183)]
+                tse_ = [float(fx[k]["tau_S4_se"]) for k in (61, 183)]
+                t_ = [f"{float(fx[k]['tau_S4']):.4f} ({e:.4f})" if e >= 5e-5 else f"{float(fx[k]['tau_S4']):.4f} ({e:.5f})" for k, e in zip((61, 183), tse_)]
+                w_ = [f"$\\ge{lb(float(fx[k]['tau_S4'])):.3f}$ ({e * (nR / dS - 1):.4f})" for k, e in zip((61, 183), tse_)]
+                rows.append(f"| Cube method, directions by QR factorisation | {name_s['S4 +diagonals']} | Monte Carlo, {int(fx[61]['B'])} draws (s.e.); "
+                            f"size other than $k$ in {fx[61]['size_exceptions']} / {fx[183]['size_exceptions']} | {c_[0]} | {c_[1]} | infinite | "
+                            f"{w_[0]} / {w_[1]} | {t_[0]} / {t_[1]} | {b_[0]} | {b_[1]} |")
+            else:
+                rows.append(f"| Cube method, directions by QR factorisation | {name_s['S4 +diagonals']} | [TO ADD] | [TO ADD] | [TO ADD] | infinite | [TO ADD] | [TO ADD] | [TO ADD] | [TO ADD] |")
     audit = f"{OUT}/results/cube_audit_S2.csv"
     au = {int(r["k"]): r for r in rd(audit) if r["landing"] == "continued"}
     draws = [r for r in rd(f"{OUT}/results/cube_audit_S2_draws.csv") if r["landing"] == "continued"]
-    tc = {k: tau_from_samples([np.array(r["sample"].split(), dtype=int) for r in draws if int(r["k"]) == k], k)[0] for k in (61, 183)}
+    tc = {k: tau_from_samples([np.array(r["sample"].split(), dtype=int) for r in draws if int(r["k"]) == k], k) for k in (61, 183)}
     cells = [f"{float(au[k]['deff']):.4f} ({float(au[k]['deff_se']):.4f})" for k in (61, 183)]
     bal = [f"{share(float(au[k]['share_exact_S2']), int(au[k]['B']))} / {share(float(au[k]['share_exact_S4']), int(au[k]['B']))}" for k in (61, 183)]
+    taus = [f"{tc[k][0]:.4f} ({tc[k][1]:.4f})" if tc[k][1] >= 5e-5 else f"{tc[k][0]:.4f} ({tc[k][1]:.5f})" for k in (61, 183)]
+    w3 = [f"$\\ge{lb(tc[k][0]):.3f}$ ({tc[k][1] * (nR / dS - 1):.4f})" for k in (61, 183)]
     rows.append(f"| Cube method, flight continued to a vertex | {name_s['S2 rows+cols']} | Monte Carlo, {int(au[61]['B'])} draws (s.e.) | "
-                f"{cells[0]} | {cells[1]} | finite, not computed | {tc[61]:.4f} / {tc[183]:.4f} | {bal[0]} | {bal[1]} |")
+                f"{cells[0]} | {cells[1]} | finite, not computed | {w3[0]} / {w3[1]} | {taus[0]} / {taus[1]} | {bal[0]} | {bal[1]} |")
     return "\n".join(rows)
 
 

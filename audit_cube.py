@@ -29,7 +29,10 @@ TOL = 1e-9       # units within TOL of 0 or 1 count as integral in the audit and
 
 
 def rref(M):
-    """In-place reduced row echelon form with exact zero tests, as ReducedRowEchelonForm.cc."""
+    """In-place reduced row echelon form with exact zero tests, as ReducedRowEchelonForm.cc.  This copies the
+    package's defect too: when the elimination is not exact in floating point (three or more line stratifications),
+    rounding errors are taken as pivots and the direction can violate the balancing equations, the sample size
+    included (check_rref_defect.py; cube_grid_fixed.py gives numerically sound directions)."""
     nrows, ncols = M.shape
     lead = 0
     for r in range(nrows):

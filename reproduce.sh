@@ -13,16 +13,22 @@ python3 study_grid.py                       # Section 7.2: exact results, lattic
 python3 time_preprocessing.py               # Section 6: preprocessing cost of the minimax mixtures
 python3 count_balanced_samples.py           # Sections 6 and 7.1: exhaustive counts of balanced samples and vertices
 python3 settle_attainment.py                # Section 6: no exactly balanced design attains (4) where (8) stays above it (needs gcc)
+python3 crosscheck_oa16.py                  # Appendix A: independent check of the OA(16,7,2,2) enumeration (needs gcc)
+python3 check_certificates.py               # Appendix A: standalone check of the certificates (standard library only)
 python3 varest_exact.py                     # Section 7.3: exact evaluation of the variance estimators
 if [ "${QUICK:-0}" != "1" ]; then
   mkdir -p results/cube_samples
   Rscript mc_cube.R data/fact_p2_m7_X.csv data/fact_p2_m7_Y.csv 2 7 8,16,32 20000 results/factorial_cube_p2_m7.csv 11 results/cube_samples/factorial_p2_m7.txt.gz
   Rscript mc_cube.R data/fact_p3_m5_X.csv data/fact_p3_m5_Y.csv 3 5 9,27,81 20000 results/factorial_cube_p3_m5.csv 12 results/cube_samples/factorial_p3_m5.txt.gz
   python3 cube_factorial.py 20000 5         # Section 7.1: cube method with the flight continued to a vertex
-  bash run_grid_mc.sh                       # Section 7.2: cube, local pivotal and local cube methods
-  bash run_grid_mc_v2.sh                    # Section 7.2: main-effect weights, local pivotal method with wrapped distances
+  bash run_grid_mc_v3.sh                    # Section 7.2, Table 4: every grid design with the original seeds (run_grid_mc.sh and
+                                            # run_grid_mc_v2.sh, the earlier runs with the same seeds, are kept for the record)
   python3 audit_cube.py 2000 12             # Section 7.2: audit of the cube method on rows and columns (and its MSE decomposition)
+  python3 cube_grid_fixed.py 400 8          # Section 7.2: cube method on S4 with directions by QR factorisation
+  python3 check_rref_defect.py 4            # Appendix A: the size exceptions come from the package's row reduction
+  Rscript check_size_drift.R                # Appendix A: sizes returned by the package's cube and lcube on a 19 x 19 grid
   python3 validate_transcription.py         # Appendix A: the transcription returns the package's samples given R's random numbers
 fi
+python3 ht_factorial.py                     # Tables 2 and 3: Horvitz-Thompson mean of the cube variants from the stored samples
 python3 replicate_populations.py 500        # Appendix A, Table A1: 500 further populations (uses the stored cube samples)
 python3 make_tables.py                      # Tables 1-5 and A1 (results/table1.md ... table5.md, tableA1.md)

@@ -8,7 +8,7 @@ intermediate result is stored in `results/`.
 
 - Python 3.12 with numpy 2.4.6 and scipy 1.18.0 (`requirements.txt`), for all exact results.
 - R 4.3.3 with BalancedSampling 2.1.1, for the Monte Carlo runs of the cube, local pivotal and local cube methods.
-- A C compiler (gcc), for the enumeration of orthogonal arrays in `settle_attainment.py`.
+- A C compiler (gcc), for the enumeration of orthogonal arrays in `settle_attainment.py` and its cross-check in `crosscheck_oa16.py`.
 
 `environment.txt` records the versions used for the stored results.
 
@@ -31,15 +31,22 @@ from the stored results.
 | `study_factorial.py` | Section 7.1 (complete factorial frames 2^7 and 3^5): the five responses, exact design effects, minimax mixtures; writes the inputs of `mc_cube.R`. |
 | `study_lattice.py` | Section 7.1: lattice sampling with a linear orthogonal array of maximal strength (Table 2, lattice column). |
 | `mc_cube.R` | Section 7.1: Monte Carlo for the cube method (random unit order before each draw), with the split of each squared error into main-effect, residual and cross parts, the main-effect weight t_M, and optionally the selected units of every draw. |
+| `ht_factorial.py` | Section 7.1, Tables 2 and 3: the Horvitz–Thompson mean (fixed denominator k) of the cube variants from their stored samples: draws of size other than k, design effects of the Horvitz–Thompson and of the realised sample mean, the parts of the squared error due to the size, the main effects, the residual and the cross terms, and the main-effect weight share τ with its standard error. |
 | `cube_factorial.py` | Section 7.1: the Python transcription of `cube` on the factorial frames, with the package's landing and with the flight continued to a vertex (20 000 draws per configuration). |
 | `replicate_populations.py` | Appendix A, Table A1: the factorial comparisons for 500 further populations (exact for coset designs and lattice sampling, stored samples for the cube variants). |
 | `study_minimax_lp.py` | Table 1: minimax mixing distributions by linear programming, reduced by the monomial group. |
 | `certify_lp.py` | Exact rational certificates for program (8): primal mixtures where the bound is attained, dual solutions where it is not. |
-| `settle_attainment.py`, `c/enum_oa16.c` | Section 6: enumeration of all balanced samples where (8) stays above the bound; every one is a flat except for OA(16,7,2,2), for which the minimax program over all arrays is solved and certified in rational arithmetic (compiles the C program with gcc). |
-| `study_grid.py` | Section 7.2 (61 x 61 elevation grid): exact design effects, ranking of the lattice directions, exact evaluation of the variance estimator (Table 4), residual Fourier energy; writes the inputs of `mc_grid.R`. |
-| `mc_grid.R` | Section 7.2: Monte Carlo for the cube, local pivotal (lpm2, planar or wrapped distances) and local cube (lcube) methods, with the main-effect weights t_M on S2 and S4. |
+| `settle_attainment.py`, `c/enum_oa16.c` | Section 6: enumeration of all balanced samples where (8) stays above the bound; every one is a flat except for OA(16,7,2,2), which `c/enum_oa16.c` lists in a canonical form (`enum_oa16 t [m]`) and for which the minimax program over all arrays is solved and certified in rational arithmetic (compiles the C program with gcc). |
+| `crosscheck_oa16.py`, `c/enum_direct.c` | Appendix A: independent check of that enumeration. `c/enum_direct.c` lists every balanced sample containing the origin by backtracking over the units, without symmetry reduction; its counts are compared, profile by profile, with those implied by the canonical forms, for m = 5, 6 and 7 (about half an hour). |
+| `check_certificates.py` | Appendix A: standalone check, with the Python standard library only, of the certificates of Table 1 and of `results/attainment.json`; it lists the admissible directions afresh. |
+| `study_grid.py` | Section 7.2 (61 x 61 elevation grid): exact design effects, ranking of the lattice directions, exact evaluation of the variance estimator (Table 5), residual Fourier energy; writes the inputs of `mc_grid.R`. |
+| `mc_grid.R` | Section 7.2: Monte Carlo for the cube, local pivotal (lpm2, planar or wrapped distances) and local cube (lcube) methods, with the main-effect weights t_M on S2 and S4, the size and the Horvitz–Thompson estimate of every draw, and optionally the selected units. |
 | `run_grid_mc.sh` | Runs `mc_grid.R` for every design and sample size of Section 7.2 with the seeds and replicate numbers of Appendix A. |
-| `run_grid_mc_v2.sh` | Reruns with the same seeds for the main-effect weights of Table 4 (first 100 draws for the slow cube S4 and local cube runs) and the local pivotal method with wrapped distances. |
+| `run_grid_mc_v2.sh` | Reruns with the same seeds for the main-effect weights (first 100 draws for the slow cube S4 and local cube runs) and the local pivotal method with wrapped distances; superseded by `run_grid_mc_v3.sh`. |
+| `run_grid_mc_v3.sh` | Section 7.2, Table 4: every grid design again with all its draws and the original seeds, recording the size, the Horvitz–Thompson estimate and the main-effect weights of every draw, and the selected units of the cube and local cube methods. |
+| `cube_grid_fixed.py` | Section 7.2, Table 4: the cube method balanced on S4 with each direction computed from a QR factorisation (otherwise the transcription of `audit_cube.py`), 400 draws per sample size; it keeps the sample size, which the package loses on S4. |
+| `check_rref_defect.py` | Appendix A: the transcription with the package's row reduction (exact zero tests) and with a tolerant one, from the same seeds: every factorial draw whose stored size differed from k, 300 control draws per configuration, and a 19 x 19 grid with two to four line stratifications. |
+| `check_size_drift.R` | Appendix A: sizes of the samples of the package's `cube` and `lcube` on a 19 x 19 grid balanced on two to four line stratifications. |
 | `varest_exact.py` | Section 7.3: exact evaluation of the random-group and regression variance estimators (factorial replicated designs, grid design balanced on rows). |
 | `audit_cube.py` | Section 7.2: Python transcription of the flight and landing phases of `cube` in BalancedSampling 2.1.1, instrumented, with the flight optionally continued until no move preserves all balancing equations; `--decompose` splits each mean squared error into main-effect, residual and cross parts. Given a sequence of uniform numbers (`UniformStream`), it uses them where the package calls R's generator. |
 | `validate_transcription.py` | Appendix A: runs `cube` in R for ten seeds per sample size (grid and factorial frames), feeds the uniform numbers R generates for each seed to `audit_cube.py`, and checks that both return the same sample. |
@@ -54,7 +61,7 @@ from the stored results.
 |---|---|
 | `data/volcano61.csv` | Rows 14–74 (all 61 columns) of R's `datasets::volcano`; unit (i, j) has code 61 i + j. |
 | `data/grid_y.csv`, `data/grid_X.csv` | Elevations in unit order, and the 0/1 indicators of rows, columns, anti-diagonals i+j and diagonals i−j (levels 1–60 of each; level 0 dropped). |
-| `data/fact_p2_m7_Y.csv`, `data/fact_p3_m5_Y.csv` | The four responses of Section 7.1 (additive, mixed, interaction, noise), seeds 7 and 5. |
+| `data/fact_p2_m7_Y.csv`, `data/fact_p3_m5_Y.csv` | The five responses of Section 7.1 (additive, mixed, interaction, noise, higher-order), seeds 7 and 5. |
 | `data/fact_p2_m7_X.csv`, `data/fact_p3_m5_X.csv` | Category indicators used as balancing variables by the cube method. |
 
 ## Results
@@ -69,9 +76,11 @@ Directions are stored as reduced row-echelon bases of the dual subspace D = V⊥
 | `results/factorial_designs.json` | Size of the support, worst case relative to the bound, positivity of second-order inclusion probabilities. |
 | `results/factorial_cube_p2_m7.csv`, `results/factorial_cube_p3_m5.csv` | Monte Carlo summaries for the cube method (mean squared error, standard error, share exactly balanced, the main-effect, residual and cross parts of the mean squared error with their standard errors, and the main-effect weight). |
 | `results/cube_samples/factorial_*.txt.gz`, `results/cube_samples/transcription_*.txt.gz` | Selected units of every factorial draw: package, and transcription with both landings. |
+| `results/factorial_ht.csv` | Horvitz–Thompson results of the factorial cube variants: draws of size other than k, design effects of the Horvitz–Thompson and sample means, parts of the squared error, shares exactly balanced and τ, with standard errors. |
 | `results/cube_factorial.csv` | Transcription on the factorial frames: design effects, shares exactly balanced, shares ending at an integral vertex, main-effect weights. |
 | `results/replicated_populations.csv`, `results/replicated_populations.npz` | Quantiles of design effects and of ratios to the minimax design over 500 populations, and all design effects. |
 | `results/attainment.json` | Enumeration of balanced samples where (8) stays above the bound; profiles and exact linear program for OA(16,7,2,2). |
+| `results/crosscheck_oa16.json` | Counts of the canonical and direct enumerations of OA(16,m,2,2) for m = 5, 6, 7 and the outcome of each check. |
 | `results/varest_exact.csv` | Exact moments and coverage of the variance estimators. |
 | `results/minimax_lp.csv` | Value of program (8) for every configuration solved (Table 1 shows a subset). |
 | `results/lp_certificates.json` | Rational certificates: mixtures attaining the bound, and dual solutions with the exact minimax value where it is not attained. |
@@ -81,6 +90,10 @@ Directions are stored as reduced row-echelon bases of the dual subspace D = V⊥
 | `results/grid_balance_shares.json` | Exact share of the samples of each grid coset design that are balanced on S2 and on S4. |
 | `results/mc_grid/*.csv` | Monte Carlo summaries for the cube, local pivotal and local cube methods on the grid. |
 | `results/mc_grid_v2/*.csv` | Reruns with main-effect weights, and the local pivotal method with wrapped distances. |
+| `results/mc_grid_v3/*.csv` | Reruns of every grid design with all draws (Table 4): mean squared errors of the sample mean and of the Horvitz–Thompson mean, draws of size other than k, τ on S2 and S4 with standard errors. |
+| `results/cube_samples/grid_*.txt.gz` | Selected units of every grid draw of the cube and local cube methods (one line per draw: k, design, units). |
+| `results/cube_grid_fixed.csv`, `results/cube_grid_fixed_draws.csv` | The cube method on S4 with directions by QR factorisation: summary (design effects, sizes, shares balanced, τ) and one line per draw. |
+| `results/rref_defect_check.csv`, `results/size_drift_check.csv` | Sizes returned with the package's and with a tolerant row reduction (transcription), and by the package on a 19 x 19 grid. |
 | `results/cube_audit_S2.csv`, `results/cube_audit_S2_draws.csv` | Audit of the cube method balanced on rows and columns: summary, and one line per draw with the selected units. |
 | `results/cube_audit_S2_decomposition.csv` | Decomposition of the mean squared error of the audited designs into main-effect, residual and cross parts. |
 | `results/exhaustive_counts.json` | Exhaustive counts of Sections 1 and 6: vertices of the Example 2 polytopes, balanced samples of the q x q grids, flats among them and spectral weights of the uniform design. |
