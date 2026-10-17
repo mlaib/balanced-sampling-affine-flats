@@ -1,9 +1,11 @@
-"""Tables 2-7 and S1 of the manuscript (Markdown) from results/, with Monte Carlo standard errors and exact/MC labels.
+"""Tables 2-7, A.1, S1 and S2 of the manuscript (Markdown) from results/, with Monte Carlo standard errors and
+exact/MC labels.
 
-Writes results/table2.md to results/table7.md, results/tableS1.md and results/grid_balance_shares.json (exact
-shares of grid coset samples that are balanced on S2 and on S4).  Table 1 of the manuscript (prior work) is not
-computed.  The functions keep the names of an earlier numbering: table1 builds Table 2, table2 Table 3, table3
-Table 4, table4 the full grid table that grid_tables splits into Tables 5 and 6, table5 Table 7 and tableA1 Table S1.
+Writes results/table2.md to results/table7.md, results/tableA.1.md, results/tableS1.md, results/tableS2.md and
+results/grid_balance_shares.json (exact shares of grid coset samples that are balanced on S2 and on S4).  Table 1
+of the manuscript (prior work) is not computed.  The functions keep the names of an earlier numbering: table1
+builds Table 2, table2 Table 3, table3 Table 4, table4 the full grid table that grid_tables splits into Tables 5
+and 6 and the diagnostic Table S2, table5 Table 7, tableA1 Table S1 and table_certificate Table A.1.
 """
 import csv, glob, json, math, os
 import numpy as np
@@ -234,7 +236,9 @@ def table4(sh):
 
 def grid_tables(sh):
     """Tables 5 and 6: the rows of the full grid table (table4) split into the design effects (Table 5) and the worst
-    cases, main-effect weight shares and shares of exactly balanced samples (Table 6), with short row labels."""
+    cases, main-effect weight shares and shares of exactly balanced samples (Table 6), with short row labels.  The
+    cube and local cube methods of the package balanced on S4, whose row reduction loses the sample size, are not
+    in these tables; tableS2 reports them as implementation diagnostics."""
     lines = table4(sh).split("\n")[2:]
     short = {"$\\mathcal S_1$ (rows)": "$\\mathcal S_1$", "$\\mathcal S_2$ (rows, columns)": "$\\mathcal S_2$",
              "$\\mathcal S_3$ ($\\mathcal S_2$ + anti-diagonals)": "$\\mathcal S_3$",
@@ -243,6 +247,7 @@ def grid_tables(sh):
     t5 = ["| Design | Evaluation | $k=61$ | $k=183$ |", "|---|---|---|---|"]
     t6 = ["| Design | $W_2$ | $W_3$, $k=61$ / $k=183$ | $\\tau$, $k=61$ / $k=183$ | Exactly balanced on $\\mathcal S_2$ / $\\mathcal S_4$, $k=61$ | Same, $k=183$ |",
           "|---|---|---|---|---|---|"]
+    rows5, rows6 = {}, {}
     for line in lines:
         c = [x.strip() for x in line.strip().strip("|").split("|")]
         name, bal_on, ev, d61, d183, w2, w3, tau, b61, b183 = c
@@ -254,25 +259,99 @@ def grid_tables(sh):
             name = {"Cube method, directions by QR factorisation": "Cube method with QR directions",
                     "Cube method, flight continued to a vertex": "Cube method, flight continued"}.get(name, name)
             label = f"{name}, {short[bal_on]}"
-        ev = ev.replace("Monte Carlo, ", "MC, ").replace(" draws (s.e.)", " draws").replace("; size other than $k$ in ", "; size $\\neq k$ in ")
-        t5.append(f"| {label} | {ev} | {d61} | {d183} |")
-        t6.append(f"| {label} | {w2} | {w3} | {tau} | {b61} | {b183} |")
+        if label in ("Cube method, $\\mathcal S_4$", "Local cube method, $\\mathcal S_4$"):
+            continue
+        ev = ev.replace("Monte Carlo, ", "MC, ").replace(" draws (s.e.)", " draws")
+        assert "size other than $k$ in" not in ev or ev.endswith("in 0 / 0"), (label, ev)
+        ev = ev.split("; size other than")[0]
+        rows5[label] = f"| {label} | {ev} | {d61} | {d183} |"
+        rows6[label] = f"| {label} | {w2} | {w3} | {tau} | {b61} | {b183} |"
+    order = ["Simple random sampling"] + [f"Equal-weight coset design, $\\mathcal S_{j}$" for j in (1, 2, 3, 4)] + \
+            [f"Coset design, best {L} lattices, $\\mathcal S_4$" for L in (4, 8, 16)] + \
+            ["Cube method, $\\mathcal S_2$", "Cube method, flight continued, $\\mathcal S_2$", "Cube method with QR directions, $\\mathcal S_4$",
+             "Local pivotal method, planar distances", "Local pivotal method, wrapped distances"]
+    assert sorted(order) == sorted(rows5), set(order) ^ set(rows5)
+    t5 += [rows5[x] for x in order]
+    t6 += [rows6[x] for x in order]
     return "\n".join(t5), "\n".join(t6)
 
 
+def tableS2():
+    """Table S2: the cube and local cube methods of BalancedSampling 2.1.1 balanced on S4 (implementation
+    diagnostics), with the cube method with QR directions for comparison: sizes, design effects of the
+    Horvitz-Thompson mean and of the realised sample mean, tau on S4 and the lower bound (9) with C = 1."""
+    d = json.load(open(f"{OUT}/results/grid_exact.json"))
+    srs = {r["k"]: r["var"] for r in d["designs"] if r["design"] == "SRS"}
+    mc = {}
+    for path in glob.glob(f"{OUT}/results/mc_grid_v3/*.csv"):
+        for r in rd(path):
+            mc.setdefault(r["design"], {})[int(r["k"])] = r
+    fx = {int(r["k"]): r for r in rd(f"{OUT}/results/cube_grid_fixed.csv")}
+    bc = {(r["design"], int(r["k"])): r for r in rd(f"{OUT}/results/bound_centred.csv") if r["frame"] == "61x61"}
+    f4 = lambda x, se: f"{x:.4f} ({se:.4f})"
+    rows = ["| Method | $k$ | Draws | Size $\\neq k$ | Sizes | Horvitz–Thompson | Sample mean | $\\tau$ | Bound (9) |",
+            "|---|---|---|---|---|---|---|---|---|"]
+    for key, label, bkey in (("cubeS4", "Cube method, package", "cube S4 (package)"),
+                             ("lcubeS4", "Local cube method, package", "local cube S4 (package)"),
+                             ("fixed", "Cube method with QR directions", "cube S4, QR directions")):
+        for k in (61, 183):
+            b = bc[(bkey, k)]
+            if key == "fixed":
+                r = fx[k]
+                ht, mean = f4(float(r["deff_ht"]), float(r["deff_ht_se"])), f4(float(r["deff_mean"]), float(r["deff_mean_se"]))
+                B, exc = int(r["B"]), int(r["size_exceptions"])
+            else:
+                r = mc[key][k]
+                ht = f4(float(r["mse_ht"]) / srs[k], float(r["mse_ht_se"]) / srs[k])
+                mean = f4(float(r["mse"]) / srs[k], float(r["mse_se"]) / srs[k])
+                B, exc = int(r["B"]), int(r["size_exceptions"])
+            assert int(b["B"]) == B and int(b["size_exceptions"]) == exc
+            sizes = f"{b['size_min']} to {b['size_max']}" if b["size_min"] != b["size_max"] else b["size_min"]
+            tau, tse = float(b["tau"]), float(b["tau_se"])
+            rows.append(f"| {label} | {k} | {B} | {exc} | {sizes} | {ht} | {mean} | {tau:.4f} ({tse:.4f}) | "
+                        f"$\\ge{float(b['bound']):.3f}$ ({float(b['bound_se']):.4f}) |")
+    return "\n".join(rows)
+
+
+def table_certificate():
+    """Table A.1: the 19 vectors (S_3, ..., S_7) of the balanced samples of 2^7 (one- and two-variable margins,
+    k = 16) with the value 3 S_3 + 2 S_4 + S_5 of the dual certificate, which is at least 14 k^2 = 3584."""
+    a = [x for x in json.load(open(f"{OUT}/results/attainment.json")) if x.get("k") == 16][0]
+    vec = {}
+    for p in a["profiles"]:
+        vec.setdefault(tuple(p["S"][3:]), set()).add(p["flat"])
+    rows = ["| $S_3$ | $S_4$ | $S_5$ | $S_6$ | $S_7$ | $3S_3+2S_4+S_5$ | Samples |", "|---|---|---|---|---|---|---|"]
+    for v in sorted(vec):
+        kind = {frozenset({1}): "flats", frozenset({0}): "not flats", frozenset({0, 1}): "both"}[frozenset(vec[v])]
+        assert sum(v) == 7 * 256 and 3 * v[0] + 2 * v[1] + v[2] >= 14 * 256
+        rows.append(f"| {v[0]} | {v[1]} | {v[2]} | {v[3]} | {v[4]} | {3 * v[0] + 2 * v[1] + v[2]} | {kind} |")
+    return "\n".join(rows)
+
+
 def table5():
-    """Exact evaluation of the variance estimators (varest_exact.py and the grid results of study_grid.py)."""
+    """Table 7: exhaustive evaluation of the variance estimators over the support (varest_exact.py and the grid
+    results of study_grid.py), with relative bias, coefficient of variation and relative root mean squared error
+    sqrt(var(v) + (E v - V)^2)/V of each estimator against the variance V of the design."""
     d = json.load(open(f"{OUT}/results/grid_exact.json"))
     name_s = {"S1 rows": "$\\mathcal S_1$", "S2 rows+cols": "$\\mathcal S_2$", "S3 +anti-diagonals": "$\\mathcal S_3$", "S4 +diagonals": "$\\mathcal S_4$"}
-    rows = ["| Population and design | $k$ | Estimator | df | CV | Coverage | Zero |",
-            "|---|---|---|---|---|---|---|"]
+    rel_rmse = lambda E, cv, V: math.sqrt((cv * E) ** 2 + (E - V) ** 2) / V
+    pct = lambda b: "0" if abs(b) < 1e-9 else f"${100 * b:.1f}\\%$"
+
+    def rng(vals, fmt):
+        a, b = fmt(min(vals)), fmt(max(vals))
+        return a if a == b else f"{a} to {b}"
+    rows = ["| Population and design | $k$ | Estimator | df | Bias | CV | RMSE | Coverage |",
+            "|---|---|---|---|---|---|---|---|"]
     for r in d["variance_estimation"]:
         name = "equal-weight coset design" if r["design"] == "flat" else f"best {r['design'][4:]} lattices"
-        rows.append(f"| Grid, {name}, {name_s[r['strat']]} | 183 | random groups | 2 | {r['cv_v']:.2f} | {100 * r['coverage_t95']:.1f}% | {100 * r['share_v_zero']:.3f}% |")
+        rm = rel_rmse(r["E_v"], r["cv_v"], r["true_var"])
+        rows.append(f"| Grid, {name}, {name_s[r['strat']]} | 183 | random groups | 2 | {pct(r['rel_bias'])} | {r['cv_v']:.2f} | "
+                    f"{rm:.2f} | {100 * r['coverage_t95']:.1f}% |")
     ve = rd(f"{OUT}/results/varest_exact.csv")
     g = [r for r in ve if r["population"] == "61x61 grid" and r["estimator"] == "regression"][0]
-    rows.append(f"| Grid, equal-weight coset design, $\\mathcal S_1$ | 183 | regression | {g['df_min']} | {float(g['cv']):.2f} | "
-                f"{100 * float(g['coverage_t95']):.1f}% | 0 |")
+    rm = rel_rmse(float(g["E_est"]), float(g["cv"]), float(g["true_var"]))
+    rows.append(f"| Grid, equal-weight coset design, $\\mathcal S_1$ | 183 | regression | {g['df_min']} | {pct(float(g['rel_bias']))} | "
+                f"{float(g['cv']):.2f} | {rm:.2f} | {100 * float(g['coverage_t95']):.1f}% |")
     for pop, frame in (("2^7", "$2^7$"), ("3^5", "$3^5$")):
         for k in sorted({int(r["k"]) for r in ve if r["population"] == pop}):
             for est in ("random groups", "regression"):
@@ -280,10 +359,13 @@ def table5():
                 if not sub:
                     continue
                 cv = [float(r["cv"]) for r in sub]; cov = [100 * float(r["coverage_t95"]) for r in sub]
+                bias = [float(r["rel_bias"]) for r in sub]
+                rm = [rel_rmse(float(r["E_est"]), float(r["cv"]), float(r["true_var"])) for r in sub]
                 df = (sub[0]["df_min"] if sub[0]["df_min"] == sub[0]["df_max"] else f"{sub[0]['df_min']} to {sub[0]['df_max']}")
-                z = max(float(r["share_zero"]) for r in sub)
-                rows.append(f"| {frame}, $C(h-1,\\nu,q)$, five responses | {k} | {est} | {df} | {min(cv):.2f} to {max(cv):.2f} | "
-                            f"{min(cov):.1f}% to {max(cov):.1f}% | {'0' if z == 0 else f'{100 * z:.3f}%'} |")
+                bias_s = "0" if max(abs(b) for b in bias) < 1e-9 else f"{pct(min(bias))} to {pct(max(bias))}"
+                rows.append(f"| {frame}, $C(h-1,\\nu,q)$, five responses | {k} | {est} | {df} | {bias_s} | "
+                            f"{rng(cv, lambda x: f'{x:.2f}')} | {rng(rm, lambda x: f'{x:.2f}')} | "
+                            f"{min(cov):.1f}% to {max(cov):.1f}% |")
     return "\n".join(rows)
 
 
@@ -311,7 +393,8 @@ if __name__ == "__main__":
     json.dump(sh, open(f"{OUT}/results/grid_balance_shares.json", "w"), indent=1)
     t5, t6 = grid_tables(sh)
     # file names follow the numbering of the manuscript, whose Table 1 (prior work) is not computed
-    t = {"table2": table1(), "table3": table2(), "table4": table3(), "table5": t5, "table6": t6, "table7": table5()}
+    t = {"table2": table1(), "table3": table2(), "table4": table3(), "table5": t5, "table6": t6, "table7": table5(),
+         "tableA.1": table_certificate(), "tableS2": tableS2()}
     if os.path.exists(f"{OUT}/results/replicated_populations.csv"):
         t["tableS1"] = tableA1()[0]
     for name, body in t.items():
