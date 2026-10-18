@@ -1,4 +1,4 @@
-"""samplecube of the package sampling on the 61 x 61 grid (Section 5.2, Tables 5 and 6): summaries of the stored
+"""samplecube of the package sampling on the 61 x 61 grid (Section 5.2, Tables 3 and S5): summaries of the stored
 draws of run_samplecube.sh, combined over chunks.  For S2 and S4 and k = 61, 183: the number of draws, the sizes,
 the design effects of the Horvitz-Thompson mean (fixed denominator k) and of the realised sample mean with Monte
 Carlo standard errors, the shares of samples exactly balanced on S2 and on S4 with binomial standard errors, the

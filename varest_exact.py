@@ -1,4 +1,4 @@
-"""Exact evaluation of two variance estimators for replicated coset designs (Section 7.3, Table 6).
+"""Exact evaluation of two variance estimators for replicated coset designs (Section 4 and Supplementary S6, Table S7).
 
 For a design that selects r cosets of one random direction, the support is enumerated (every direction in
 the support of nu and every set of r cosets, all equally likely), and for each response we compute:
@@ -11,7 +11,7 @@ the support of nu and every set of r cosets, all equally likely), and for each r
          defined when k exceeds the rank of the model on the sample, and the interval uses t_{0.975, k-rank}.
 
 Designs: in the factorial frames of Section 7.1, the replicated design C(h-1, nu, q) with nu uniform on
-A_{h-1}(S) (the 'Coset, r = q' column of Table 2); on the elevation grid, the r = 3 equal-weight design
+A_{h-1}(S) (the '$r=q$' column of Table S3); on the elevation grid, the r = 3 equal-weight design
 balanced on rows (S1), for which the sample regression is the one-way analysis of variance by rows.
 Writes results/varest_exact.csv.
 """

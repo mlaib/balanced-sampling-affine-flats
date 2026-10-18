@@ -1,4 +1,4 @@
-"""Ranks of the sample main-effects model used by the regression variance estimator (Section 5.3, Table 7).
+"""Ranks of the sample main-effects model used by the regression variance estimator (Section 4 and Supplementary S6, Table S7).
 
 varest_exact.py takes the rank of the sample design matrix X_s (an intercept and the indicators of levels
 1..q-1 of each variable, 0/1 entries, unscaled) as the number of singular values above 1e-9 times the largest.

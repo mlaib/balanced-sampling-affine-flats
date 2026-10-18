@@ -1,4 +1,4 @@
-"""Factorial cube results with the Horvitz-Thompson mean (Section 5.1, Tables 3 and 4, Supplementary S4).
+"""Factorial cube results with the Horvitz-Thompson mean (Section 5.1, Tables 2, S3, S4 and S6; Supplementary S4).
 
 The cube method occasionally returns k - 1 or k + 1 units.  With inclusion probabilities k/N the
 Horvitz-Thompson estimator of the mean is sum(y_s)/k, with the fixed denominator k; it is design-unbiased,

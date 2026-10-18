@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Grid Monte Carlo reruns for review round 8: every design of Table 4 with all its draws and the original seeds
+# Grid Monte Carlo reruns for review round 8: every design of Table 3 with all its draws and the original seeds
 # (so the same draws as run_grid_mc.sh), recording the sample size, the Horvitz-Thompson estimate with the
 # fixed denominator k and the main-effect weights of every draw; the cube and local cube samples are stored.
 set -euo pipefail

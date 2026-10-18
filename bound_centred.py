@@ -11,7 +11,7 @@ the bound (9) of the manuscript.  With E|s| = k, var(|s|) = E(|s| - k)^2, so the
     Z = 1 + (C |R_S|/d_S - 1) t_M(s)/T0 - (|s| - k)^2/(k^2 T0),
 and its Monte Carlo standard error is the standard deviation of Z divided by sqrt(B), which accounts for the
 correlation of the two terms.  t_M(s) = sum_W (q^{n_W} sum_b n_b^2 - |s|^2)/k^2 over the stratifications W of S,
-whose subspaces W^perp meet only in 0.  C = 1 throughout, as in Table 6.
+whose subspaces W^perp meet only in 0.  C = 1 throughout, as in Tables 3, S2 and S5.
 
 Factorial frames: S = the one-variable margins; samples of the package (mc_cube.R) and of the transcription
 with the flight continued (cube_factorial.py).  Grid: S = S4 (four line stratifications); samples of the

@@ -1,20 +1,21 @@
-"""Tables 2-5, A.1 and S1-S7 of the manuscript (Markdown) from results/, with Monte Carlo standard errors and
-exact/MC labels, in the numbering of the shortened version of the manuscript (release v1.9).
+"""Tables 1-3, A.1 and S1-S7 of the manuscript (Markdown) from results/, with Monte Carlo standard errors and
+exact/MC labels, in the numbering of the journal version of the manuscript (v3, release v1.10).
 
-Writes results/table2.md to results/table5.md, results/tableA.1.md, results/tableS1.md to results/tableS7.md and
-results/grid_balance_shares.json (exact shares of grid coset samples that are balanced on S2 and on S4).  Table 1
-of the manuscript (prior work) is not computed.  The functions keep the names of an earlier numbering:
-  table1 -> Table 2 (minimax mixtures);
-  table3_main -> Table 3 (factorial design effects: the cube method of both packages, the uniform and minimax coset
+Writes results/table1.md to results/table3.md, results/tableA.1.md, results/tableS1.md to results/tableS7.md and
+results/grid_balance_shares.json (exact shares of grid coset samples that are balanced on S2 and on S4).  The
+functions keep the names of an earlier numbering:
+  table1 -> Table 1 (minimax mixtures);
+  table3_main -> Table 2 (factorial design effects: the cube method of both packages, the uniform and minimax coset
       designs and lattice sampling), table2 -> Table S3 (the same with the continued flight, both landings of
       samplecube and the replicated coset design), table3 -> Table S4 (properties that do not depend on the response);
-  table4 -> the full grid table, which grid_tables splits into Table 4 (design effects), Table 5 (worst case over
-      Y_1(sigma^2) for S4 and main-effect weight shares) and Table S5 (all worst cases and shares of exactly balanced
-      samples); tableS2 -> Table S2 (implementation diagnostics);
+  table4 -> the full grid table, which grid_tables splits into the design effects and Table S5 (all worst cases and
+      shares of exactly balanced samples); grid_table_v3 -> Table 3 (design effects and the worst case over
+      Y_1(sigma^2) for S4); tableS2 -> Table S2 (implementation diagnostics);
   table_order -> Table S6 (order of the balancing variables; written only once the runs in reverse order exist),
   table5 -> Table S7 (variance estimators; Table S6 when there is no Table S6 for the order),
   tableA1 -> Table S1 (replicated populations), table_certificate -> Table A.1.
-Release v1.8 wrote the earlier numbering (Tables 2-7, A.1, S1 and S2).
+Release v1.9 wrote the numbering of the shortened version (Tables 2-5, A.1, S1-S7) and release v1.8 that of
+the version before it (Tables 2-7, A.1, S1 and S2).
 """
 import csv, glob, json, math, os
 import numpy as np
@@ -60,7 +61,7 @@ def factorial_inputs():
 
 def factorial_table(full):
     """Design effects of the Horvitz-Thompson mean; the cube variants from their stored samples (ht_factorial.py).
-    full=False: Table 3, with the cube method of BalancedSampling and samplecube with the landing by linear
+    full=False: Table 2, with the cube method of BalancedSampling and samplecube with the landing by linear
     programming, the uniform and minimax coset designs and lattice sampling.  full=True: Table S3, which adds the
     continued flight, samplecube with the landing by suppression of variables and the replicated design."""
     ex, lat, _, _, ht = factorial_inputs()
@@ -207,7 +208,7 @@ def grid_prop3_exact(C=1.0):
 
 
 def table4(sh):
-    """Table 4.  Proposition 2 column: worst case over Y(sigma^2) for the design's own balancing set, relative to the
+    """The full grid table (the rows of Tables 3 and S5).  Proposition 2 column: worst case over Y(sigma^2) for the design's own balancing set, relative to the
     equal-weight design for that set.  Proposition 3 column: worst case over Y_1(sigma^2) for S4 relative to the
     equal-weight design for S4, exact for translation-invariant designs and the plug-in lower bound
     1 + tau (|R|/d - 1) of Proposition 3(a), with its standard error, for the Monte Carlo designs."""
@@ -293,8 +294,8 @@ def table4(sh):
 
 
 def grid_tables(sh):
-    """Tables 5 and 6: the rows of the full grid table (table4) split into the design effects (Table 5) and the worst
-    cases, main-effect weight shares and shares of exactly balanced samples (Table 6), with short row labels.  The
+    """The rows of the full grid table (table4) split into the design effects and the worst cases, main-effect weight
+    shares and shares of exactly balanced samples (Table S5), with short row labels.  The
     cube and local cube methods of the package balanced on S4, whose row reduction loses the sample size, are not
     in these tables; tableS2 reports them as implementation diagnostics."""
     lines = table4(sh).split("\n")[2:]
@@ -358,8 +359,23 @@ def grid_tables(sh):
     return "\n".join(t5), "\n".join(t6)
 
 
+def grid_table_v3(sh):
+    """Table 3 of the journal version (v3): the design effects and, in one more column, the worst case W over
+    Y_1(sigma^2) for S4 relative to the equal-weight design for S4 (Proposition 3 with C = 1); also returns Table S5."""
+    t4, tS5 = grid_tables(sh)
+    w = {}
+    for line in tS5.split("\n")[2:]:
+        c = [x.strip() for x in line.strip().strip("|").split("|")]
+        w[c[0]] = c[2]
+    out = ["| Design | Evaluation | $k=61$ | $k=183$ | $W$, $k=61$ / $k=183$ |", "|---|---|---|---|---|"]
+    for line in t4.split("\n")[2:]:
+        c = [x.strip() for x in line.strip().strip("|").split("|")]
+        out.append(f"| {c[0]} | {c[1]} | {c[2]} | {c[3]} | {w[c[0]]} |")
+    return "\n".join(out), tS5
+
+
 def grid_tables_v2(sh):
-    """Table 4 (design effects), Table 5 (worst case over Y_1(sigma^2) for S4 and the main-effect weight share tau)
+    """Release v1.9, superseded by grid_table_v3: Table 4 (design effects), Table 5 (worst case over Y_1(sigma^2) for S4 and the main-effect weight share tau)
     and Table S5 (the full table: both worst cases, tau and the shares of exactly balanced samples)."""
     t4, tS5 = grid_tables(sh)
     t5 = ["| Design | $W$, $k=61$ / $k=183$ | $\\tau$, $k=61$ / $k=183$ |", "|---|---|---|"]
@@ -423,7 +439,7 @@ def table_certificate():
 
 
 def table5():
-    """Table 7: exhaustive evaluation of the variance estimators over the support (varest_exact.py and the grid
+    """Table S7: exhaustive evaluation of the variance estimators over the support (varest_exact.py and the grid
     results of study_grid.py), with relative bias, coefficient of variation and relative root mean squared error
     sqrt(var(v) + (E v - V)^2)/V of each estimator against the variance V of the design."""
     d = json.load(open(f"{OUT}/results/grid_exact.json"))
@@ -485,9 +501,9 @@ def tableA1():
 if __name__ == "__main__":
     sh = grid_balance_shares()
     json.dump(sh, open(f"{OUT}/results/grid_balance_shares.json", "w"), indent=1)
-    t4, t5, tS5 = grid_tables_v2(sh)
-    # file names follow the numbering of the manuscript, whose Table 1 (prior work) is not computed
-    t = {"table2": table1(), "table3": table3_main(), "table4": t4, "table5": t5, "tableA.1": table_certificate(),
+    t3, tS5 = grid_table_v3(sh)
+    # file names follow the numbering of the journal version of the manuscript (v3)
+    t = {"table1": table1(), "table2": table3_main(), "table3": t3, "tableA.1": table_certificate(),
          "tableS2": tableS2(), "tableS3": table2(), "tableS4": table3(), "tableS5": tS5}
     if os.path.exists(f"{OUT}/results/replicated_populations.csv"):
         t["tableS1"] = tableA1()[0]
@@ -496,7 +512,7 @@ if __name__ == "__main__":
         t["tableS6"], t["tableS7"] = to, table5()
     else:
         t["tableS6"] = table5()
-    for stale in ("table6", "table7") + (("tableS7",) if to is None else ()):   # numbering of release v1.8
+    for stale in ("table4", "table5", "table6", "table7") + (("tableS7",) if to is None else ()):   # releases v1.8, v1.9
         if os.path.exists(f"{OUT}/results/{stale}.md"):
             os.remove(f"{OUT}/results/{stale}.md")
     for name, body in t.items():
