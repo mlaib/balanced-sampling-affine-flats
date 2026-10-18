@@ -16,10 +16,10 @@ whose subspaces W^perp meet only in 0.  C = 1 throughout, as in Table 6.
 Factorial frames: S = the one-variable margins; samples of the package (mc_cube.R) and of the transcription
 with the flight continued (cube_factorial.py).  Grid: S = S4 (four line stratifications); samples of the
 package (cube on S2 and S4, local cube on S4), of the cube method with directions by QR factorisation, and of
-the audit (package landing and flight continued, S2).  The local pivotal method has fixed size and no stored
+the audit (package landing and flight continued, S2), and of samplecube of the package sampling (S2 and S4).  The local pivotal method has fixed size and no stored
 samples; its bound is 1 + 13.5 tau from results/mc_grid_v3.  Writes results/bound_centred.csv.
 """
-import csv, gzip, os
+import csv, glob, gzip, os
 import numpy as np
 from ht_factorial import FRAMES, load, samples
 
@@ -68,6 +68,10 @@ if __name__ == "__main__":
         N, d = len(Y), m * (q - 1)
         src = {"cube (package)": samples(f"{OUT}/results/cube_samples/factorial_p{q}_m{m}.txt.gz"),
                "cube, flight continued": samples(f"{OUT}/results/cube_samples/transcription_p{q}_m{m}.txt.gz", "continued")}
+        for impl, name in (("scube1", "samplecube, LP landing"), ("scube2", "samplecube, suppression")):
+            path = f"{OUT}/results/cube_samples/factorial_{impl}_p{q}_m{m}.txt.gz"
+            if os.path.exists(path):
+                src[name] = samples(path)
         for k in ks:
             for name, S in src.items():
                 draws = S[k]
@@ -83,6 +87,12 @@ if __name__ == "__main__":
             draws = read_grid(f"{OUT}/results/cube_samples/{path}.txt.gz")[k]
             size, tm = grid_tm(draws, k)
             rows.append(summary("61x61", k, name, size, tm, N, d))
+        for des, name in (("scubeS2", "samplecube S2"), ("scubeS4", "samplecube S4")):
+            paths = sorted(glob.glob(f"{OUT}/results/cube_samples/grid_{des}_k{k}_c*.txt.gz"))
+            if paths:                                       # samplecube of the package sampling, in chunks
+                draws = [s for path in paths for s in read_grid(path).get(k, [])]
+                size, tm = grid_tm(draws, k)
+                rows.append(summary("61x61", k, name, size, tm, N, d))
         audit = [r for r in csv.DictReader(open(f"{OUT}/results/cube_audit_S2_draws.csv")) if int(r["k"]) == k]
         for landing, name in (("bs", "cube S2, transcription"), ("continued", "cube S2, flight continued")):
             draws = [np.array(r["sample"].split(), dtype=np.int64) for r in audit if r["landing"] == landing]

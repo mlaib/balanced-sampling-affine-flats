@@ -1,8 +1,17 @@
-| Frame | $k$ | Exactly balanced | Size $k\pm1$ | $\tau$ | $W$, uniform | $W$, $r=q$ | $W$, lattice |
-|---|---|---|---|---|---|---|---|
-| $2^7$ | 8 | 0.175 (0.003) / 0.179 (0.003) | 6 / 8 | 0.0069 / 0.0069 | 1.114 | 1.287 | 8.00 |
-| $2^7$ | 16 | 0.174 (0.003) / 0.192 (0.003) | 10 / 11 | 0.0037 / 0.0036 | 1.046 | 1.114 | 17.14 |
-| $2^7$ | 32 | 0.185 (0.003) / 0.206 (0.003) | 6 / 3 | 0.0021 / 0.0020 | 1.015 | 1.046 | 40.00 |
-| $3^5$ | 9 | 0.117 (0.002) / 0.119 (0.002) | 1 / 4 | 0.0055 / 0.0054 | 1.102 | 1.450 | 4.46 |
-| $3^5$ | 27 | 0.116 (0.002) / 0.128 (0.002) | 4 / 5 | 0.0020 / 0.0019 | 1.024 | 1.102 | 7.25 |
-| $3^5$ | 81 | 0.126 (0.002) / 0.162 (0.003) | 2 / 3 | 0.0008 / 0.0008 | 1.000 | 1.024 | 7.25 |
+| Design | Evaluation | $k=61$ | $k=183$ |
+|---|---|---|---|
+| Simple random sampling | exact | 1 | 1 |
+| Equal-weight coset design, $\mathcal S_1$ | exact | 0.7171 | 0.7171 |
+| Equal-weight coset design, $\mathcal S_2$ | exact | 0.1621 | 0.1621 |
+| Equal-weight coset design, $\mathcal S_3$ | exact | 0.1197 | 0.1197 |
+| Equal-weight coset design, $\mathcal S_4$ | exact | 0.0878 | 0.0878 |
+| Coset design, best 4 lattices, $\mathcal S_4$ | exact | 0.0102 | 0.0102 |
+| Coset design, best 8 lattices, $\mathcal S_4$ | exact | 0.0113 | 0.0113 |
+| Coset design, best 16 lattices, $\mathcal S_4$ | exact | 0.0118 | 0.0118 |
+| Cube method, $\mathcal S_2$ | MC, 2000 draws | 0.2220 (0.0070) | 0.1925 (0.0061) |
+| Cube method, flight continued, $\mathcal S_2$ | MC, 2000 draws | 0.1581 (0.0050) | 0.1693 (0.0053) |
+| Cube method (sampling), $\mathcal S_2$ | MC, 200 draws | 0.1800 (0.0160) | 0.1379 (0.0122) |
+| Cube method with QR directions, $\mathcal S_4$ | MC, 400 draws | 0.3060 (0.0191) | 0.1604 (0.0105) |
+| Cube method (sampling), $\mathcal S_4$ | MC, 100 draws | 0.1434 (0.0191) | 0.0893 (0.0120) |
+| Local pivotal method, planar distances | MC, 20 000 draws | 0.0976 (0.0010) | 0.0413 (0.0004) |
+| Local pivotal method, wrapped distances | MC, 20 000 draws | 0.1376 (0.0014) | 0.0661 (0.0007) |

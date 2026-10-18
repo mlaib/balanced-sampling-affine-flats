@@ -1,11 +1,20 @@
-"""Tables 2-7, A.1, S1 and S2 of the manuscript (Markdown) from results/, with Monte Carlo standard errors and
-exact/MC labels.
+"""Tables 2-5, A.1 and S1-S7 of the manuscript (Markdown) from results/, with Monte Carlo standard errors and
+exact/MC labels, in the numbering of the shortened version of the manuscript (release v1.9).
 
-Writes results/table2.md to results/table7.md, results/tableA.1.md, results/tableS1.md, results/tableS2.md and
+Writes results/table2.md to results/table5.md, results/tableA.1.md, results/tableS1.md to results/tableS7.md and
 results/grid_balance_shares.json (exact shares of grid coset samples that are balanced on S2 and on S4).  Table 1
-of the manuscript (prior work) is not computed.  The functions keep the names of an earlier numbering: table1
-builds Table 2, table2 Table 3, table3 Table 4, table4 the full grid table that grid_tables splits into Tables 5
-and 6 and the diagnostic Table S2, table5 Table 7, tableA1 Table S1 and table_certificate Table A.1.
+of the manuscript (prior work) is not computed.  The functions keep the names of an earlier numbering:
+  table1 -> Table 2 (minimax mixtures);
+  table3_main -> Table 3 (factorial design effects: the cube method of both packages, the uniform and minimax coset
+      designs and lattice sampling), table2 -> Table S3 (the same with the continued flight, both landings of
+      samplecube and the replicated coset design), table3 -> Table S4 (properties that do not depend on the response);
+  table4 -> the full grid table, which grid_tables splits into Table 4 (design effects), Table 5 (worst case over
+      Y_1(sigma^2) for S4 and main-effect weight shares) and Table S5 (all worst cases and shares of exactly balanced
+      samples); tableS2 -> Table S2 (implementation diagnostics);
+  table_order -> Table S6 (order of the balancing variables; written only once the runs in reverse order exist),
+  table5 -> Table S7 (variance estimators; Table S6 when there is no Table S6 for the order),
+  tableA1 -> Table S1 (replicated populations), table_certificate -> Table A.1.
+Release v1.8 wrote the earlier numbering (Tables 2-7, A.1, S1 and S2).
 """
 import csv, glob, json, math, os
 import numpy as np
@@ -49,21 +58,70 @@ def factorial_inputs():
     return ex, lat, cube, cont, ht
 
 
-def table2():
-    """Design effects of the Horvitz-Thompson mean; the cube variants from their stored samples (ht_factorial.py)."""
-    ex, lat, cube, cont, ht = factorial_inputs()
-    out = ["| Frame | $k$ | Response | $R^2_{\\mathrm{adj}}$ | Cube | Cube, continued | Uniform | Minimax | $r=q$ | Lattice |",
-           "|---|---|---|---|---|---|---|---|---|---|"]
+def factorial_table(full):
+    """Design effects of the Horvitz-Thompson mean; the cube variants from their stored samples (ht_factorial.py).
+    full=False: Table 3, with the cube method of BalancedSampling and samplecube with the landing by linear
+    programming, the uniform and minimax coset designs and lattice sampling.  full=True: Table S3, which adds the
+    continued flight, samplecube with the landing by suppression of variables and the replicated design."""
+    ex, lat, _, _, ht = factorial_inputs()
+    has = lambda src: any(key[2] == src for key in ht)
+    mc = [("Cube", "package")]
+    if full:
+        mc.append(("Cube, continued", "transcription, flight continued"))
+    if has("samplecube, LP landing"):
+        mc.append(("Cube, sampling" if not full else "Cube, sampling, LP landing", "samplecube, LP landing"))
+    if full and has("samplecube, suppression"):
+        mc.append(("Cube, sampling, suppression", "samplecube, suppression"))
+    ex_cols = ["Uniform", "Minimax"] + (["$r=q$"] if full else []) + ["Lattice"]
+    head = ["Frame", "$k$", "Response", "$R^2_{\\mathrm{adj}}$"] + [n for n, _ in mc] + ex_cols
+    out = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
     order = {n: i for i, n in enumerate(RESPONSES)}
     for r in sorted(ex, key=lambda r: (r["p"], int(r["k"]), order[r["response"]])):
-        c = ht[(r["p"], r["k"], "package", r["response"])]
-        cc = ht[(r["p"], r["k"], "transcription, flight continued", r["response"])]
+        cells = [f"${r['p']}^{r['m']}$", r["k"], r["response"], f"{float(r['adjR2']):.3f}"]
+        for _, src in mc:
+            c = ht[(r["p"], r["k"], src, r["response"])]
+            cells.append(f"{float(c['deff_ht']):.3f} ({float(c['deff_ht_se']):.3f})")
+        cells += [f"{float(r['deff_coset-uniform']):.3f}", f"{float(r['deff_coset-minimax']):.3f}"]
+        if full:
+            cells.append(f"{float(r.get('deff_coset-uniform r=2') or r['deff_coset-uniform r=3']):.3f}")
         L = lat[(r["p"], r["k"])]
-        rr = r.get("deff_coset-uniform r=2") or r["deff_coset-uniform r=3"]
-        out.append(f"| ${r['p']}^{r['m']}$ | {r['k']} | {r['response']} | {float(r['adjR2']):.3f} | "
-                   f"{float(c['deff_ht']):.3f} ({float(c['deff_ht_se']):.3f}) | {float(cc['deff_ht']):.3f} ({float(cc['deff_ht_se']):.3f}) | "
-                   f"{float(r['deff_coset-uniform']):.3f} | {float(r['deff_coset-minimax']):.3f} | {float(rr):.3f} | "
-                   f"{float(L['deff_' + r['response']]):.3f} ({L['strength']}) |")
+        cells.append(f"{float(L['deff_' + r['response']]):.3f} ({L['strength']})")
+        out.append("| " + " | ".join(str(c) for c in cells) + " |")
+    return "\n".join(out)
+
+
+def table3_main():
+    return factorial_table(False)
+
+
+def table2():
+    return factorial_table(True)
+
+
+def table_order():
+    """Table S7: design effects for the additive response, and shares of exactly balanced samples, with the
+    balancing variables in the given and in the reverse order (the inclusion probabilities first in both), for the
+    cube method of BalancedSampling and samplecube with both landings (ht_factorial.py).  None if the runs in
+    reverse order are missing."""
+    ht = factorial_inputs()[4]
+    impl = [("BalancedSampling", "package", "package, reversed order"),
+            ("samplecube, LP landing", "samplecube, LP landing", "samplecube, LP landing, reversed order"),
+            ("samplecube, suppression", "samplecube, suppression", "samplecube, suppression, reversed order")]
+    impl = [x for x in impl if any(key[2] == x[2] for key in ht)]
+    if not impl:
+        return None
+    head = ["Frame", "$k$"] + [f"{n}, design effect" for n, _, _ in impl] + [f"{n}, exactly balanced" for n, _, _ in impl]
+    out = ["| " + " | ".join(head) + " |", "|" + "---|" * len(head)]
+    for p, m, ks in [("2", "7", ("8", "16", "32")), ("3", "5", ("9", "27", "81"))]:
+        for k in ks:
+            cells = [f"${p}^{m}$", k]
+            for _, a, b in impl:
+                ca, cb = ht[(p, k, a, "additive")], ht[(p, k, b, "additive")]
+                cells.append(f"{float(ca['deff_ht']):.3f} ({float(ca['deff_ht_se']):.3f}) / {float(cb['deff_ht']):.3f} ({float(cb['deff_ht_se']):.3f})")
+            for _, a, b in impl:
+                ca, cb = ht[(p, k, a, "additive")], ht[(p, k, b, "additive")]
+                cells.append(f"{float(ca['share_exact']):.3f} / {float(cb['share_exact']):.3f}")
+            out.append("| " + " | ".join(str(c) for c in cells) + " |")
     return "\n".join(out)
 
 
@@ -76,13 +134,13 @@ def table3():
            "|---|---|---|---|---|---|---|---|"]
     for p, m, ks in [("2", "7", ("8", "16", "32")), ("3", "5", ("9", "27", "81"))]:
         for k in ks:
-            c = ht[(p, k, "package", "additive")]
-            cc = ht[(p, k, "transcription, flight continued", "additive")]
+            src = [ht[(p, k, s_, "additive")] for s_ in ("package", "transcription, flight continued", "samplecube, LP landing",
+                                                         "samplecube, suppression")
+                   if (p, k, s_, "additive") in ht]
             rr = wc.get((p, k, "coset-uniform r=2"), wc.get((p, k, "coset-uniform r=3")))
-            out.append(f"| ${p}^{m}$ | {k} | {float(c['share_exact']):.3f} ({float(c['share_exact_se']):.3f}) / "
-                       f"{float(cc['share_exact']):.3f} ({float(cc['share_exact_se']):.3f}) | "
-                       f"{c['size_exceptions']} / {cc['size_exceptions']} | "
-                       f"{float(c['tau']):.4f} / {float(cc['tau']):.4f} | {wc[(p, k, 'coset-uniform')]:.3f} | {rr:.3f} | "
+            out.append(f"| ${p}^{m}$ | {k} | " + " / ".join(f"{float(c['share_exact']):.3f} ({float(c['share_exact_se']):.3f})" for c in src) + " | "
+                       + " / ".join(str(c["size_exceptions"]) for c in src) + " | "
+                       + " / ".join(f"{float(c['tau']):.4f}" for c in src) + f" | {wc[(p, k, 'coset-uniform')]:.3f} | {rr:.3f} | "
                        f"{float(lat[(p, k)]['worst_case_over_flat']):.2f} |")
     return "\n".join(out)
 
@@ -266,20 +324,56 @@ def grid_tables(sh):
         ev = ev.split("; size other than")[0]
         rows5[label] = f"| {label} | {ev} | {d61} | {d183} |"
         rows6[label] = f"| {label} | {w2} | {w3} | {tau} | {b61} | {b183} |"
+    sg = f"{OUT}/results/samplecube_grid.csv"
+    if os.path.exists(sg):                                  # samplecube of the package sampling (samplecube_grid.py)
+        scg = {(r["design"], int(r["k"])): r for r in rd(sg)}
+        bc = {(r["design"], int(r["k"])): r for r in rd(f"{OUT}/results/bound_centred.csv") if r["frame"] == "61x61"}
+        share = lambda p_, se_: "none" if float(p_) == 0 else ("all" if float(p_) == 1 else f"{float(p_):.3f} ({float(se_):.3f})")
+        for des, bal in (("scubeS2", "$\\mathcal S_2$"), ("scubeS4", "$\\mathcal S_4$")):
+            if (des, 61) not in scg or (des, 183) not in scg:
+                continue
+            label = f"Cube method (sampling), {bal}"
+            r61, r183 = scg[(des, 61)], scg[(des, 183)]
+            assert int(r61["size_exceptions"]) == 0 and int(r183["size_exceptions"]) == 0
+            rows5[label] = (f"| {label} | MC, {r61['B']} draws | {float(r61['deff_ht']):.4f} ({float(r61['deff_ht_se']):.4f}) | "
+                            f"{float(r183['deff_ht']):.4f} ({float(r183['deff_ht_se']):.4f}) |")
+            own = "share_exact_S2" if des == "scubeS2" else "share_exact_S4"
+            w2 = "finite, not computed" if float(r61[own]) == 1 and float(r183[own]) == 1 else "infinite"
+            name = "samplecube S2" if des == "scubeS2" else "samplecube S4"
+            b61, b183 = bc[(name, 61)], bc[(name, 183)]
+            w3 = f"$\\ge{float(b61['bound']):.3f}$ ({float(b61['bound_se']):.4f}) / $\\ge{float(b183['bound']):.3f}$ ({float(b183['bound_se']):.4f})"
+            fmt_t = lambda b_: f"{float(b_['tau']):.4f} ({float(b_['tau_se']):.4f})" if float(b_["tau_se"]) >= 5e-5 else f"{float(b_['tau']):.4f} ({float(b_['tau_se']):.5f})"
+            rows6[label] = (f"| {label} | {w2} | {w3} | {fmt_t(b61)} / {fmt_t(b183)} | "
+                            f"{share(r61['share_exact_S2'], r61['share_exact_S2_se'])} / {share(r61['share_exact_S4'], r61['share_exact_S4_se'])} | "
+                            f"{share(r183['share_exact_S2'], r183['share_exact_S2_se'])} / {share(r183['share_exact_S4'], r183['share_exact_S4_se'])} |")
     order = ["Simple random sampling"] + [f"Equal-weight coset design, $\\mathcal S_{j}$" for j in (1, 2, 3, 4)] + \
             [f"Coset design, best {L} lattices, $\\mathcal S_4$" for L in (4, 8, 16)] + \
-            ["Cube method, $\\mathcal S_2$", "Cube method, flight continued, $\\mathcal S_2$", "Cube method with QR directions, $\\mathcal S_4$",
+            ["Cube method, $\\mathcal S_2$", "Cube method, flight continued, $\\mathcal S_2$", "Cube method (sampling), $\\mathcal S_2$",
+             "Cube method with QR directions, $\\mathcal S_4$", "Cube method (sampling), $\\mathcal S_4$",
              "Local pivotal method, planar distances", "Local pivotal method, wrapped distances"]
-    assert sorted(order) == sorted(rows5), set(order) ^ set(rows5)
+    order = [x for x in order if x in rows5]
+    assert sorted(order) == sorted(rows5) == sorted(rows6), set(order) ^ set(rows5)
     t5 += [rows5[x] for x in order]
     t6 += [rows6[x] for x in order]
     return "\n".join(t5), "\n".join(t6)
 
 
+def grid_tables_v2(sh):
+    """Table 4 (design effects), Table 5 (worst case over Y_1(sigma^2) for S4 and the main-effect weight share tau)
+    and Table S5 (the full table: both worst cases, tau and the shares of exactly balanced samples)."""
+    t4, tS5 = grid_tables(sh)
+    t5 = ["| Design | $W$, $k=61$ / $k=183$ | $\\tau$, $k=61$ / $k=183$ |", "|---|---|---|"]
+    for line in tS5.split("\n")[2:]:
+        c = [x.strip() for x in line.strip().strip("|").split("|")]
+        t5.append(f"| {c[0]} | {c[2]} | {c[3]} |")
+    return t4, "\n".join(t5), tS5
+
+
 def tableS2():
     """Table S2: the cube and local cube methods of BalancedSampling 2.1.1 balanced on S4 (implementation
     diagnostics), with the cube method with QR directions for comparison: sizes, design effects of the
-    Horvitz-Thompson mean and of the realised sample mean, tau on S4 and the lower bound (9) with C = 1."""
+    Horvitz-Thompson mean and of the realised sample mean, tau on S4 and the lower bound (S1) of the supplement
+    (Proposition 3(a) for designs of varying size, responses with mean zero) with C = 1."""
     d = json.load(open(f"{OUT}/results/grid_exact.json"))
     srs = {r["k"]: r["var"] for r in d["designs"] if r["design"] == "SRS"}
     mc = {}
@@ -289,7 +383,7 @@ def tableS2():
     fx = {int(r["k"]): r for r in rd(f"{OUT}/results/cube_grid_fixed.csv")}
     bc = {(r["design"], int(r["k"])): r for r in rd(f"{OUT}/results/bound_centred.csv") if r["frame"] == "61x61"}
     f4 = lambda x, se: f"{x:.4f} ({se:.4f})"
-    rows = ["| Method | $k$ | Draws | Size $\\neq k$ | Sizes | Horvitz–Thompson | Sample mean | $\\tau$ | Bound (9) |",
+    rows = ["| Method | $k$ | Draws | Size $\\neq k$ | Sizes | Horvitz–Thompson | Sample mean | $\\tau$ | Bound (S1) |",
             "|---|---|---|---|---|---|---|---|---|"]
     for key, label, bkey in (("cubeS4", "Cube method, package", "cube S4 (package)"),
                              ("lcubeS4", "Local cube method, package", "local cube S4 (package)"),
@@ -391,12 +485,20 @@ def tableA1():
 if __name__ == "__main__":
     sh = grid_balance_shares()
     json.dump(sh, open(f"{OUT}/results/grid_balance_shares.json", "w"), indent=1)
-    t5, t6 = grid_tables(sh)
+    t4, t5, tS5 = grid_tables_v2(sh)
     # file names follow the numbering of the manuscript, whose Table 1 (prior work) is not computed
-    t = {"table2": table1(), "table3": table2(), "table4": table3(), "table5": t5, "table6": t6, "table7": table5(),
-         "tableA.1": table_certificate(), "tableS2": tableS2()}
+    t = {"table2": table1(), "table3": table3_main(), "table4": t4, "table5": t5, "tableA.1": table_certificate(),
+         "tableS2": tableS2(), "tableS3": table2(), "tableS4": table3(), "tableS5": tS5}
     if os.path.exists(f"{OUT}/results/replicated_populations.csv"):
         t["tableS1"] = tableA1()[0]
+    to = table_order()                                     # supplementary tables are numbered in order of appearance
+    if to is not None:
+        t["tableS6"], t["tableS7"] = to, table5()
+    else:
+        t["tableS6"] = table5()
+    for stale in ("table6", "table7") + (("tableS7",) if to is None else ()):   # numbering of release v1.8
+        if os.path.exists(f"{OUT}/results/{stale}.md"):
+            os.remove(f"{OUT}/results/{stale}.md")
     for name, body in t.items():
         open(f"{OUT}/results/{name}.md", "w").write(body + "\n")
-        print(body, "\n")
+        print(f"[{name}]\n{body}\n")

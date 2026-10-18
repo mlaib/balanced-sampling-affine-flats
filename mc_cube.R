@@ -6,6 +6,10 @@
 # records the main-effect weight t_M = sum over main-effect frequencies of |eta_s(u)|^2, which for the
 # one-variable stratifications is (q/k^2) times the sum of squared deviations of the level counts from k/q.
 # With a ninth argument, writes the selected units of every draw (one line per draw) to that file.
+# A tenth argument chooses the implementation: bs (default, cube of BalancedSampling), scube1 or scube2
+# (samplecube of the package sampling, with the landing by linear programming or by suppression of variables).
+# An eleventh argument, reversed, passes the variables in reverse order (the inclusion probabilities stay first), to
+# show how much the result depends on the order of the balancing variables; the default is the given order.
 .libPaths(c("~/R/library", .libPaths()))
 suppressMessages(library(BalancedSampling))
 a <- commandArgs(trailingOnly = TRUE)
@@ -14,7 +18,17 @@ Y <- as.matrix(read.csv(a[2], header = TRUE))
 q <- as.integer(a[3]); nf <- as.integer(a[4])
 ks <- as.integer(strsplit(a[5], ",")[[1]]); B <- as.integer(a[6]); out <- a[7]
 seed <- if (length(a) >= 8) as.integer(a[8]) else 1L
-samples_out <- if (length(a) >= 9) a[9] else NA
+samples_out <- if (length(a) >= 9 && a[9] != "-") a[9] else NA
+impl <- if (length(a) >= 10) a[10] else "bs"
+var_order <- if (length(a) >= 11) a[11] else "given"
+stopifnot(var_order %in% c("given", "reversed"))
+cols <- if (var_order == "reversed") unlist(lapply(nf:1, function(i) ((i - 1) * (q - 1) + 1):(i * (q - 1)))) else seq_len(nf * (q - 1))
+stopifnot(impl %in% c("bs", "scube1", "scube2"))
+if (impl != "bs") suppressMessages(library(sampling))
+draw <- function(prob, xb) switch(impl,
+  bs = BalancedSampling::cube(prob, xb),
+  scube1 = which(sampling::samplecube(xb, prob, order = 2, comment = FALSE, method = 1) == 1),
+  scube2 = which(sampling::samplecube(xb, prob, order = 2, comment = FALSE, method = 2) == 1))
 if (!is.na(samples_out)) { con <- gzfile(samples_out, "w") }
 set.seed(seed)
 N <- nrow(X)
@@ -24,13 +38,13 @@ Rho <- sweep(Y, 2, colMeans(Y)) - M                                         # re
 res <- list()
 for (k in ks) {
   prob <- rep(k / N, N)
-  xb <- cbind(prob, X)
+  xb <- cbind(prob, X[, cols, drop = FALSE])      # balancing variables in the chosen order
   means <- matrix(NA_real_, B, ncol(Y)); exact <- logical(B); maxdev <- numeric(B); tM <- numeric(B)
   em <- er <- matrix(NA_real_, B, ncol(Y))
   t0 <- proc.time()[3]
   for (b in 1:B) {
     perm <- sample.int(N)                     # random unit order before each draw
-    s <- perm[cube(prob[perm], xb[perm, , drop = FALSE])]
+    s <- perm[draw(prob[perm], xb[perm, , drop = FALSE])]
     means[b, ] <- colMeans(Y[s, , drop = FALSE])
     em[b, ] <- colMeans(M[s, , drop = FALSE]); er[b, ] <- colMeans(Rho[s, , drop = FALSE])
     # level counts for every factor (level 0 count = k - sum of the others)

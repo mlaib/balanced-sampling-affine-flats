@@ -1,0 +1,2 @@
+"k","design","B","mse","mse_se","prop_exact_S2","prop_exact_S4","mean_maxdev_S4","sec_per_sample","tM_S2","tM_S2_se","tM_S4","tM_S4_se","tau_S2","tau_S4","tau_S4_se","size_exceptions","size_min","size_max","mse_ht","mse_ht_se"
+61,"scubeS2",100,1.65678078854148,0.220368707987473,1,0,3.47,48.53184,0,0,2.01737704918033,0.0220530535086837,0,0.0336229508196721,0.000367550891811396,0,61,61,1.65678078854148,0.220368707987473

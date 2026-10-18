@@ -1,4 +1,4 @@
-| Method | $k$ | Draws | Size $\neq k$ | Sizes | Horvitz–Thompson | Sample mean | $\tau$ | Bound (9) |
+| Method | $k$ | Draws | Size $\neq k$ | Sizes | Horvitz–Thompson | Sample mean | $\tau$ | Bound (S1) |
 |---|---|---|---|---|---|---|---|---|
 | Cube method, package | 61 | 400 | 324 | 55 to 68 | 3.1029 (0.2346) | 0.4110 (0.0258) | 0.0320 (0.0002) | $\ge1.432$ (0.0023) |
 | Cube method, package | 183 | 400 | 369 | 167 to 196 | 4.8221 (0.3273) | 0.3121 (0.0237) | 0.0265 (0.0001) | $\ge1.358$ (0.0020) |

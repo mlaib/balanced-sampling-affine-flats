@@ -6,6 +6,8 @@
 # Every draw also records its size, the Horvitz-Thompson estimate sum(y_s)/k (with the fixed denominator k) and
 # t_M computed as sum over main-effect frequencies of |eta_s(u)|^2 with eta_s(u) = k^-1 sum_{x in s} chi_u(x),
 # that is (q sum_b n_b^2 - |s|^2)/k^2 for each line stratification, which equals the expression above when |s| = k.
+# The designs scubeS2 and scubeS4 are samplecube of the package sampling (flight to a vertex by singular value
+# decomposition, landing by suppression of variables) balanced on S2 and S4.
 # Usage: Rscript mc_grid.R <k1,k2> <B> <out.csv> [seed] [designs] [samples.txt.gz]
 .libPaths(c("~/R/library", .libPaths()))
 suppressMessages(library(BalancedSampling))
@@ -15,6 +17,8 @@ seed <- if (length(a) >= 4) as.integer(a[4]) else 1L
 which_designs <- if (length(a) >= 5) strsplit(a[5], ",")[[1]] else c("cubeS2", "cubeS4", "lpm2", "lcubeS4")
 samples_out <- if (length(a) >= 6) a[6] else NA
 if (!is.na(samples_out)) con <- gzfile(samples_out, "w")
+if (any(grepl("^scube", which_designs))) suppressMessages(library(sampling))
+scube <- function(prob, xb) which(sampling::samplecube(xb, prob, order = 2, comment = FALSE, method = 2) == 1)
 set.seed(seed)
 q <- 61L
 X <- as.matrix(read.csv("data/grid_X.csv", header = FALSE))   # 4 factors x 60 indicators
@@ -43,11 +47,13 @@ for (k in ks) {
     for (b in 1:B) {
       perm <- sample.int(N)
       s <- switch(des,
-        cubeS2 = perm[cube(prob[perm], cbind(prob, X[, S2cols])[perm, ])],
-        cubeS4 = perm[cube(prob[perm], cbind(prob, X[, S4cols])[perm, ])],
+        cubeS2 = perm[BalancedSampling::cube(prob[perm], cbind(prob, X[, S2cols])[perm, ])],
+        cubeS4 = perm[BalancedSampling::cube(prob[perm], cbind(prob, X[, S4cols])[perm, ])],
         lpm2 = perm[lpm2(prob[perm], coords[perm, ])],
         lpm2torus = perm[lpm2(prob[perm], torus[perm, ])],
-        lcubeS4 = perm[lcube(prob[perm], coords[perm, ], cbind(prob, X[, S4cols])[perm, ])])
+        lcubeS4 = perm[lcube(prob[perm], coords[perm, ], cbind(prob, X[, S4cols])[perm, ])],
+        scubeS2 = perm[scube(prob[perm], cbind(prob, X[, S2cols])[perm, ])],
+        scubeS4 = perm[scube(prob[perm], cbind(prob, X[, S4cols])[perm, ])])
       est[b] <- mean(y[s]); ht[b] <- sum(y[s]) / k; size[b] <- length(s)
       if (!is.na(samples_out)) writeLines(paste(c(k, des, sort(s) - 1L), collapse = " "), con)
       dev2[b] <- imbalance(s, S2cols, k); dev4[b] <- imbalance(s, S4cols, k)

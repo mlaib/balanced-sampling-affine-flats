@@ -1,10 +1,11 @@
-"""Factorial cube results with the Horvitz-Thompson mean (Section 7.1, Tables 2 and 3, Appendix A).
+"""Factorial cube results with the Horvitz-Thompson mean (Section 5.1, Tables 3 and 4, Supplementary S4).
 
 The cube method occasionally returns k - 1 or k + 1 units.  With inclusion probabilities k/N the
 Horvitz-Thompson estimator of the mean is sum(y_s)/k, with the fixed denominator k; it is design-unbiased,
 so its mean squared error is its variance, whereas the realised sample mean is not the Horvitz-Thompson
 estimator on the draws whose size differs from k.  From the stored samples of the package (mc_cube.R) and
-of the transcription with both landings (cube_factorial.py), this script computes, for every configuration
+of the transcription with both landings (cube_factorial.py), and of samplecube of the package sampling with
+both landings (run_samplecube.sh), this script computes, for every configuration
 and response:
   - the number of size exceptions;
   - the design effect of the Horvitz-Thompson mean, and of the realised sample mean for comparison;
@@ -59,6 +60,12 @@ if __name__ == "__main__":
         sources = {"package": samples(f"{OUT}/results/cube_samples/factorial_p{q}_m{m}.txt.gz"),
                    "transcription, package landing": samples(f"{OUT}/results/cube_samples/transcription_p{q}_m{m}.txt.gz", "bs"),
                    "transcription, flight continued": samples(f"{OUT}/results/cube_samples/transcription_p{q}_m{m}.txt.gz", "continued")}
+        for impl, name in (("scube1", "samplecube, LP landing"), ("scube2", "samplecube, suppression"),
+                           ("bs_rev", "package, reversed order"), ("scube1_rev", "samplecube, LP landing, reversed order"),
+                           ("scube2_rev", "samplecube, suppression, reversed order")):
+            path = f"{OUT}/results/cube_samples/factorial_{impl}_p{q}_m{m}.txt.gz"
+            if os.path.exists(path):                        # samplecube of the package sampling, and reversed orders (run_samplecube.sh)
+                sources[name] = samples(path)
         for k in ks:
             vsrs = (1 / k - 1 / N) * Y.var(axis=0, ddof=1)
             T = N / k - 1
