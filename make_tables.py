@@ -86,7 +86,7 @@ def factorial_table(full):
         if full:
             cells.append(f"{float(r.get('deff_coset-uniform r=2') or r['deff_coset-uniform r=3']):.3f}")
         L = lat[(r["p"], r["k"])]
-        cells.append(f"{float(L['deff_' + r['response']]):.3f} ({L['strength']})")
+        cells.append(f"{float(L['deff_' + r['response']]):.3f}")   # array strengths are given in the notes
         out.append("| " + " | ".join(str(c) for c in cells) + " |")
     return "\n".join(out)
 
