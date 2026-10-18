@@ -1,11 +1,11 @@
-"""Section 7.2: the cube method balanced on S4 on the elevation grid, with numerically sound balancing directions.
+"""Section 5.2: the cube method balanced on S4 on the elevation grid, with numerically sound balancing directions.
 
 BalancedSampling 2.1.1 computes each balancing direction from a reduced row-echelon form whose pivots are found by
 exact comparisons with zero (src/ReducedRowEchelonForm.cc), without a tolerance or partial pivoting.  With rows and
 columns alone the elimination stays exact in floating point; with three or more line stratifications it does not,
 rounding errors of order 1e-16 are taken as pivots, and the direction then violates the balancing equations,
 including the sample size.  Each move is still a martingale move, so the inclusion probabilities are preserved,
-but the size of the sample drifts (Section 7.2).  This script runs the transcription of `cube` in audit_cube.py
+but the size of the sample drifts (Section 5.2).  This script runs the transcription of `cube` in audit_cube.py
 with one change: each direction is a null vector of the candidates' balancing matrix computed from a QR
 factorisation (LAPACK), which satisfies the balancing equations to rounding error.  When that matrix has full rank
 the direction is the package's direction up to scale and sign; otherwise both are valid null vectors.  The unit
@@ -13,7 +13,7 @@ order, the flight and landing phases (the landing drops the last balancing varia
 kept), the random step and the integrality tolerance are those of the package.  For each draw it records the size,
 the Horvitz-Thompson estimate (with the fixed denominator k), the balance on S2 and S4 and the main-effect weights,
 and stores the selected units.  The function tolerant_rref (partial pivoting, entries at most 1e-9 times the largest
-treated as zero) is the alternative used in the check of Appendix A; it gives the same sizes.
+treated as zero) is the alternative used in the check of Supplementary material S4; it gives the same sizes.
 Usage: python3 cube_grid_fixed.py [B] [processes] [qr|rref]   Writes results/cube_grid_fixed.csv,
 results/cube_grid_fixed_draws.csv and results/cube_samples/grid_cubeS4_fixed_k{61,183}.txt.gz.
 """

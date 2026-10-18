@@ -1,11 +1,11 @@
-"""Appendix A: the size exceptions of the cube method come from the row reduction of BalancedSampling 2.1.1.
+"""Supplementary material S4: the size exceptions of the cube method come from the row reduction of BalancedSampling 2.1.1.
 
 The package finds the pivots of its reduced row-echelon form by exact comparisons with zero.  When the
 elimination is not exact in floating point, rounding errors are taken as pivots and the computed direction
 violates the balancing equations, the sample size included.  The transcription audit_cube.Cube reproduces the
 package (validate_transcription.py); here it is run from the same seeds with the package's row reduction and with
 the tolerant one of cube_grid_fixed.py (partial pivoting, entries at most 1e-9 times the largest treated as zero):
-  - in the factorial frames of Section 7.1, flight and package landing, for every seed of cube_factorial.py whose
+  - in the factorial frames of Section 5.1, flight and package landing, for every seed of cube_factorial.py whose
     stored draw has a size other than k, and for 300 other seeds of each configuration chosen at random;
   - on a 19 x 19 grid balanced on two, three and four line stratifications (20 draws per case).
 check_size_drift.R counts the same for the package's cube and lcube on the 19 x 19 grid.

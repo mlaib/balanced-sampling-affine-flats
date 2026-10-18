@@ -1,4 +1,4 @@
-"""Exhaustive counts quoted in Sections 1 and 6 (Appendix A, exhaustive counts).
+"""Exhaustive counts quoted in Sections 1, 2 and 4 (Supplementary material S1, exhaustive counts).
 
 1. Example 2 of Tille and Rivest: the polytope {u in [0,1]^N : A u = b}, with A the sample-size row and
    the indicators of the three binary stratifications (rank 4) and b = A pi for pi = 1/2, for N = 8
@@ -7,7 +7,7 @@
    0/1 settings are enumerated, the solutions with 0 <= u_B <= 1 kept and duplicates removed.  A vertex
    is integral when every coordinate is within 1e-9 of 0 or 1; the 0/1 solutions are also counted
    directly over all samples of the right size.
-2. Section 6: samples of size q of the q x q grid balanced on rows, columns and anti-diagonals i+j.
+2. Sections 2 and 4: samples of size q of the q x q grid balanced on rows, columns and anti-diagonals i+j.
    They are the permutations s of Z_q for which i -> i + s(i) is also a permutation (complete mappings),
    listed by backtracking; flats are s(i) = a i + b with a not in {0, -1}.  For the uniform design over
    them, the weights w(u) = E|eta_s(u)|^2 are computed from the two-dimensional discrete Fourier

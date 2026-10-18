@@ -1,4 +1,4 @@
-"""Standalone check of the exact certificates of Table 1, Section 6 and Appendix A.
+"""Standalone check of the exact certificates of Table 1 and Appendix A (Proposition 6).
 
 It uses the Python standard library only, and none of the solver, the enumeration programs or the other
 modules of the repository; it reads results/lp_certificates.json and results/attainment.json.

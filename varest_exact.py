@@ -3,14 +3,14 @@
 For a design that selects r cosets of one random direction, the support is enumerated (every direction in
 the support of nu and every set of r cosets, all equally likely), and for each response we compute:
 
-  v      the random-group estimator (1 - r/Q) s_c^2 / r of Proposition 6(b), with the interval
+  v      the random-group estimator (1 - r/Q) s_c^2 / r of Proposition 7(b), with the interval
          ybar +- t_{0.975, r-1} v^{1/2};
   v_reg  the regression estimator (1/k - 1/N) RSS / (k - rank), where RSS is the residual sum of squares of
          the least-squares fit, on the sample, of the main-effects model of the balancing variables; by
          Corollary 3 it estimates the variance of an equal-weight design, (N/k - 1) sigma_R^2 / |R_S|; it is
          defined when k exceeds the rank of the model on the sample, and the interval uses t_{0.975, k-rank}.
 
-Designs: in the factorial frames of Section 7.1, the replicated design C(h-1, nu, q) with nu uniform on
+Designs: in the factorial frames of Section 5.1, the replicated design C(h-1, nu, q) with nu uniform on
 A_{h-1}(S) (the '$r=q$' column of Table S3); on the elevation grid, the r = 3 equal-weight design
 balanced on rows (S1), for which the sample regression is the one-way analysis of variance by rows.
 Writes results/varest_exact.csv.

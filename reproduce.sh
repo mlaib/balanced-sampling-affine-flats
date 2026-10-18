@@ -11,12 +11,12 @@ python3 study_minimax_lp.py                 # Table 1
 python3 certify_lp.py                       # exact certificates for Table 1 (attainment and non-attainment)
 python3 study_grid.py                       # Section 5.2: exact results, lattice ranking, spectrum, inputs of Table 3
 python3 time_preprocessing.py               # Section 4: preprocessing cost of the minimax mixtures
-python3 count_balanced_samples.py           # Sections 4 and 5.1: exhaustive counts of balanced samples and vertices
-python3 settle_attainment.py                # Section 4: no exactly balanced design attains (4) where (8) stays above it (needs gcc)
+python3 count_balanced_samples.py           # Sections 2 and 4, Supplement S1: exhaustive counts of balanced samples and vertices
+python3 settle_attainment.py                # Proposition 6: no exactly balanced design attains (4) where (8) stays above it (needs gcc)
 python3 crosscheck_oa16.py                  # Appendix A: independent check of the OA(16,7,2,2) enumeration (needs gcc)
 python3 check_certificates.py               # Appendix A: standalone check of the certificates (standard library only)
 python3 varest_exact.py                     # Section 4 and Supplement S6: exact evaluation of the variance estimators
-python3 check_ranks.py                      # Appendix A: ranks of the regression estimator, by singular values and exactly
+python3 check_ranks.py                      # Supplement S6: ranks of the regression estimator, by singular values and exactly
 if [ "${QUICK:-0}" != "1" ]; then
   mkdir -p results/cube_samples
   Rscript mc_cube.R data/fact_p2_m7_X.csv data/fact_p2_m7_Y.csv 2 7 8,16,32 20000 results/factorial_cube_p2_m7.csv 11 results/cube_samples/factorial_p2_m7.txt.gz

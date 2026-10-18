@@ -1,4 +1,4 @@
-"""Cube method with the flight continued to a vertex in the complete factorial frames of Section 7.1.
+"""Cube method with the flight continued to a vertex in the complete factorial frames of Section 5.1.
 
 Uses the Python transcription of `cube` in BalancedSampling 2.1.1 (audit_cube.Cube, with the null vectors of
 the reduced row-echelon form, as in the package) on the balancing matrix of mc_cube.R: the inclusion

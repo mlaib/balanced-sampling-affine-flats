@@ -1,4 +1,4 @@
-# Appendix A: sizes of the samples returned by cube and lcube of BalancedSampling 2.1.1 on a 19 x 19 grid balanced
+# Supplementary material S4: sizes of the samples returned by cube and lcube of BalancedSampling 2.1.1 on a 19 x 19 grid balanced
 # on two, three and four line stratifications (rows, columns, anti-diagonals i+j, diagonals i-j, wrapped), with the
 # inclusion probabilities as the first balancing variable, as in mc_grid.R.  With rows and columns the sizes are
 # fixed; with three or four stratifications they drift, because the package's row reduction tests pivots for

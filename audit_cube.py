@@ -1,4 +1,4 @@
-"""Audit of the cube method balanced on rows and columns of the 61 x 61 grid (Section 7.2, Appendix A).
+"""Audit of the cube method balanced on rows and columns of the 61 x 61 grid (Section 5.2, Supplementary material S4).
 
 A Python mirror of `cube` in BalancedSampling 2.1.1 (src/CubeClass.cc): units in random order; the flight
 phase moves p+1 fractional units at a time along an RREF null vector and stops as soon as at most p units

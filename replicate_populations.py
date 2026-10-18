@@ -1,6 +1,6 @@
-"""Variability of the factorial comparisons of Section 7.1 across generated populations (Appendix A).
+"""Variability of the factorial comparisons of Section 5.1 across generated populations (Supplementary material S3, Table S1).
 
-The populations of Section 7.1 use seeds 7 (2^7) and 5 (3^5).  Here the same generator (study_factorial
+The populations of Section 5.1 use seeds 7 (2^7) and 5 (3^5).  Here the same generator (study_factorial
 .responses) is run with seeds 1000, ..., 1000 + P - 1 for each frame.  The designs do not depend on the
 response, so they are held fixed: the uniform and minimax coset designs (the stored minimax mixtures), the
 replicated design C(h-1, nu, q) and lattice sampling with the arrays of Table 2 are evaluated exactly for

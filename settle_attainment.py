@@ -1,4 +1,4 @@
-"""Is the bound (4) attained by some exactly balanced design where coset mixtures fail?  (Section 6, Appendix A)
+"""Is the bound (4) attained by some exactly balanced design where coset mixtures fail?  (Proposition 6, Appendix A)
 
 For every configuration in which the linear program (8) over coset mixtures stays above the bound (twelve
 configurations; results/minimax_lp.csv), all samples of size k balanced on S are enumerated, up to

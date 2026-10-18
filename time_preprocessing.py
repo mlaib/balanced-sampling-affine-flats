@@ -1,7 +1,7 @@
-"""Preprocessing cost of the three ways of drawing a coset design (Section 6, implementation).
+"""Preprocessing cost of the three ways of drawing a coset design (Section 4, implementation).
 
-For each configuration of Table 1 and Section 7.1: time and peak memory to enumerate the admissible
-directions, to solve the reduced program (8) over weight-distribution classes, and, for Section 7.1,
+For each configuration of Table 1 and Section 5.1: time and peak memory to enumerate the admissible
+directions, to solve the reduced program (8) over weight-distribution classes, and, for Section 5.1,
 to solve the unreduced program over all admissible directions; the acceptance rate of rejection
 sampling of a uniform admissible direction; and the size of the stored minimax support.
 Writes results/preprocessing_costs.csv.

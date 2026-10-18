@@ -1,10 +1,10 @@
-"""Transition-level check of audit_cube.py against cube() of BalancedSampling 2.1.1 (Appendix A).
+"""Transition-level check of audit_cube.py against cube() of BalancedSampling 2.1.1 (Supplementary material S4).
 
 For each seed, R draws a sample with cube() after set.seed(seed), and saves the uniform numbers runif()
 returns after the same set.seed(seed).  The transcription consumes those numbers in the package's order
 (the shuffle of the units, one number per flight or landing step, one for the last unit) and its sample is
-compared with the package's.  Balancing matrices: the rows and columns of Section 7.2 (flight with the
-graph null vectors), and the one-variable indicators of the factorial frames of Section 7.1 (flight with
+compared with the package's.  Balancing matrices: the rows and columns of Section 5.2 (flight with the
+graph null vectors), and the one-variable indicators of the factorial frames of Section 5.1 (flight with
 the row-echelon null vectors, as in cube_factorial.py).
 Writes results/transcription_check.csv.  Usage: python3 validate_transcription.py [seeds per configuration]
 """
