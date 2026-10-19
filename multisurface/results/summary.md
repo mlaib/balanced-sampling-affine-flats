@@ -6,6 +6,8 @@ Volcano check against Table 3 (k=61): {"eqw_S2": 0.1621, "eqw_S4": 0.0878, "best
 
 Real elevation blocks (256): best-16 beats the better of lpm2 and lcube-S2 on 98.4%, median ratio 0.468, quartiles 0.324 / 0.646. **Verdict: holds.**
 
+Beyond two Monte Carlo standard errors of lpm2: best-16 better on 252, worse on 3, within on 1 blocks.
+
 Volcano: ratio 0.121.
 
 | Group | n | eqw S4 | best-4 | best-16 | lpm2 | lcube S2 | cube S2 | best-16 / competitor (median) | best-16 wins |
@@ -49,6 +51,8 @@ Volcano: ratio 0.121.
 ## k = 183
 
 Real elevation blocks (256): best-16 beats the better of lpm2 and lcube-S2 on 60.9%, median ratio 0.915, quartiles 0.689 / 1.126. **Verdict: partial.**
+
+Beyond two Monte Carlo standard errors of lpm2: best-16 better on 147, worse on 97, within on 12 blocks.
 
 Volcano: ratio 0.286.
 

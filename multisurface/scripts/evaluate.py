@@ -137,9 +137,9 @@ with open(os.path.join(ROOT, "results", "deff_long.csv"), "w") as fh:
 with open(os.path.join(ROOT, "results", "design_properties.json"), "w") as fh:
     json.dump(props, fh, indent=1)
 
-tab = {}
+tab, se = {}, {}
 for i, k, des, v, s in rows:
-    tab[(i, k, des)] = v
+    tab[(i, k, des)], se[(i, k, des)] = v, s
 src = np.array([m["source"] for m in meta])
 grp = np.array([m["group"] for m in meta])
 out = ["# Multi-surface test: results", "",
@@ -159,6 +159,12 @@ for k in KS:
             f"Real elevation blocks ({e.sum()}): best-16 beats the better of lpm2 and lcube-S2 on {win:.1%}, "
             f"median ratio {med:.3f}, quartiles {np.quantile(ratio[e], 0.25):.3f} / {np.quantile(ratio[e], 0.75):.3f}. "
             f"**Verdict: {verdict}.**", "",
+            # Monte Carlo sensitivity (review AI2.3): best-16 is exact, lpm2 has a Monte Carlo standard error
+            "Beyond two Monte Carlo standard errors of lpm2: best-16 better on "
+            f"{sum(tab[(i, k, 'lpm2')] - tab[(i, k, 'best16_S4')] > 2 * se[(i, k, 'lpm2')] for i in np.nonzero(e)[0])}, "
+            f"worse on {sum(tab[(i, k, 'best16_S4')] - tab[(i, k, 'lpm2')] > 2 * se[(i, k, 'lpm2')] for i in np.nonzero(e)[0])}, "
+            f"within on {sum(abs(tab[(i, k, 'best16_S4')] - tab[(i, k, 'lpm2')]) <= 2 * se[(i, k, 'lpm2')] for i in np.nonzero(e)[0])} "
+            "blocks.", "",
             f"Volcano: ratio {ratio[0]:.3f}.", "",
             "| Group | n | eqw S4 | best-4 | best-16 | lpm2 | lcube S2 | cube S2 | best-16 / competitor (median) | best-16 wins |",
             "|---|---|---|---|---|---|---|---|---|---|"]
