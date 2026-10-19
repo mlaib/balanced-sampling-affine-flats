@@ -184,11 +184,7 @@ If you use this code or these data, please cite the manuscript:
 
 ## Licence
 
-The code is released under the GNU Affero General Public License, version 3 ([AGPL-3.0](LICENSE)). This follows
-BalancedSampling 2.1.1, which is licensed under the AGPL-3, because `audit_cube.py` transcribes its `cube` function
-and row reduction into Python. The R scripts also use BalancedSampling and sampling (GPL >= 2). The data keep the
-terms of their sources: the data set `volcano` is distributed with R, and the elevation blocks come from the
-Terrain Tiles, whose sources and licences are listed above.
+GNU Affero General Public License v3.0 (AGPL-3.0). See [LICENSE](LICENSE).
 
 ## Contact
 
