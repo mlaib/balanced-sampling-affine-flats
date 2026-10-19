@@ -48,7 +48,8 @@ QUICK=1 bash reproduce.sh    # exact computations only, then the tables from the
 | `check_rref_defect.py` | Supplementary material S4: the transcription with the package's row reduction (exact zero tests) and with a tolerant one, from the same seeds: every factorial draw whose stored size differed from k, 300 control draws per configuration, and a 19 x 19 grid with two to four line stratifications. |
 | `check_size_drift.R` | Supplementary material S4: sizes of the samples of the package's `cube` and `lcube` on a 19 x 19 grid balanced on two to four line stratifications. |
 | `bound_centred.py` | Section 5 and Tables 3, S2 and S5: the lower bound (S1) of the supplement, Proposition 3(a) for the Monte Carlo designs, corrected for a varying sample size (responses with mean zero), from the per-draw sizes and stratum counts, with a joint standard error. |
-| `mc_bias.py` | Section 5 and Section S2: the mean error of the Horvitz–Thompson estimator, with its Monte Carlo standard error, for every stored Monte Carlo sample (252 combinations of design, sample size and response), including the draws of another size. |
+| `mc_bias.py` | Section 5 and Section S2: the mean error of the Horvitz–Thompson estimator, with its Monte Carlo standard error, for every stored Monte Carlo sample (252 combinations of design, sample size and response), including the draws of another size, an| `table_s9.py` | Supplement S9 and Table S9: the verification map of Proposition 6, from the stored certificates and enumeration results. |
+d the design effects for the response and for the centred response. |
 | `check_ranks.py` | Supplementary material S6: the ranks of the sample main-effects model used by the regression variance estimator, by singular values and exactly by elimination modulo a prime, for every sample of the factorial supports. |
 | `bootstrap_bank.py` | Supplementary material S3: resamples whole draws from the stored bank of each cube variant, the same resample for every population, to give the Monte Carlo standard errors of the cube quantiles of Table S1. |
 | `varest_exact.py` | Section 4 and Supplement S6: exact evaluation of the random-group and regression variance estimators (factorial replicated designs, grid design balanced on rows). |
@@ -111,6 +112,7 @@ Directions are stored as reduced row-echelon bases of the dual subspace D = V⊥
 | `results/preprocessing_costs.csv` | Preprocessing cost of the coset designs of Table 1 and Section 5.1 (one laptop core). |
 | `results/bound_centred.csv` | The lower bounds (S1) of the Monte Carlo designs, with the size correction, the main-effect weight share and their standard errors. |
 | `results/mc_bias.csv` | The mean errors of the Horvitz–Thompson estimator over the stored samples, with standard errors, z values and the number of draws of another size. |
+| `results/tableS9.md` | Table S9 of the supplementary material. |
 | `results/rank_check.json` | Singular-value gap and exact ranks of the sample design matrices of the regression estimator. |
 | `results/bootstrap_bank.csv` | Bootstrap standard errors of the cube quantiles and shares of Table S1, and the Monte Carlo error of the ratio within a population. |
 | `results/factorial_scube1_*.csv`, `results/factorial_scube2_*.csv`, `results/factorial_*_rev_*.csv` | Monte Carlo summaries of `samplecube` (landing by linear programming and by suppression of variables) and of the runs with the balancing variables in reverse order; their selected units are in `results/cube_samples/`. |

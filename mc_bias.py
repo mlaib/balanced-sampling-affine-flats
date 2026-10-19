@@ -4,8 +4,9 @@ With inclusion probabilities k/N the Horvitz-Thompson estimator of the mean is s
 denominator k, and it is design-unbiased also when a draw returns another size. From every stored Monte Carlo
 sample (the cube methods in the factorial frames and on the grid, the local cube method and samplecube), this
 script computes for each configuration and response the number of draws of another size, the mean error
-e = mean(sum(y_s)/k) - Ybar, its standard error sd/sqrt(B) and z = e/se. The local pivotal draws are not stored
-and have fixed size. Writes results/mc_bias.csv.
+e = mean(sum(y_s)/k) - Ybar, its standard error sd/sqrt(B) and z = e/se, and the design effect of the
+estimator for the response and for the centred response y - Ybar, which differ only through draws of another
+size. The local pivotal draws are not stored and have fixed size. Writes results/mc_bias.csv.
 """
 import csv, glob, gzip, os
 import numpy as np
@@ -34,12 +35,16 @@ def evaluate(population, source, draws, Y, names):
         B = len(S)
         size = np.array([len(s) for s in S])
         ht = np.array([Y[s].sum(axis=0) / k for s in S])
+        N = len(Y)
         for j, name in enumerate(names):
-            e = ht[:, j] - Y[:, j].mean()
+            Ybar = Y[:, j].mean()
+            e = ht[:, j] - Ybar
+            ec = e - (size / k - 1) * Ybar                      # the error for the centred response y - Ybar
+            vsrs = (1 / k - 1 / N) * Y[:, j].var(ddof=1)
             se = e.std(ddof=1) / np.sqrt(B)
             rows.append({"population": population, "source": source, "k": k, "response": name, "B": B,
                          "size_exceptions": int((size != k).sum()), "mean_error": e.mean(), "se": se,
-                         "z": e.mean() / se})
+                         "z": e.mean() / se, "deff": (e ** 2).mean() / vsrs, "deff_centred": (ec ** 2).mean() / vsrs})
 
 
 for q, m in ((2, 7), (3, 5)):
@@ -65,6 +70,12 @@ with open(f"{OUT}/results/mc_bias.csv", "w", newline="") as fh:
         w.writerow({a: (f"{b:.6g}" if isinstance(b, float) else b) for a, b in r.items()})
 z = np.array([r["z"] for r in rows])
 print(len(rows), "configurations and responses; |z| > 1.96 in", int((np.abs(z) > 1.96).sum()), "; max |z| = %.2f" % np.abs(z).max())
+fact = [r for r in rows if r["population"] != "grid"]
+print("factorial: largest change of a design effect when the response is centred: %.2e (relative %.2e)" % (
+    max(abs(r["deff"] - r["deff_centred"]) for r in fact), max(abs(r["deff"] / r["deff_centred"] - 1) for r in fact)))
+for r in rows:
+    if r["population"] == "grid" and r["size_exceptions"]:
+        print("grid", r["source"], r["k"], "deff %.4f, centred %.4f" % (r["deff"], r["deff_centred"]))
 for r in rows:
     if abs(r["z"]) > 1.96:
         print(r["population"], r["source"], r["k"], r["response"], r["B"], r["size_exceptions"], "z = %.2f" % r["z"])
