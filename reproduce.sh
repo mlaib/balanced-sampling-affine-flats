@@ -5,6 +5,7 @@ set -euo pipefail
 cd "$(dirname "$0")"
 mkdir -p logs
 python3 test_theory.py                      # brute-force checks of Sections 2-4
+python3 test_prime_power.py > results/prime_power_check.txt   # Supplement S1: prime powers reduce to the prime field
 python3 study_factorial.py                  # Section 5.1: exact design effects; writes data/fact_*
 python3 study_lattice.py                    # Section 5.1: lattice sampling
 python3 study_minimax_lp.py                 # Table 1
@@ -42,4 +43,5 @@ if [ "${QUICK:-0}" != "1" ]; then
   bash multisurface/scripts/run_mc.sh            # Supplement S8: stored samples of lpm2, lcube and cube on the 61 x 61 grid
 fi
 python3 multisurface/scripts/evaluate.py        # Supplement S8 and Table S8 (multisurface/results/tableS8.md)
+python3 fig_coset_samples.py                # Figure 1
 python3 make_tables.py                      # Tables 1-3, A.1 and S1-S7 (results/table1.md ... table3.md, tableA.1.md, tableS1.md ... tableS7.md)

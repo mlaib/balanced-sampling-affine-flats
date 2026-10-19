@@ -1,0 +1,2 @@
+GF(4)^2 as GF(2)^4, 2 GF(4)-line stratifications: 6 admissible GF(2)-directions of dimension 2, 3 of them GF(4)-lines; every coset balanced; variances of C(2, uniform, r), r = 1, 2, match enumeration for 20 responses each
+GF(4)^2 as GF(2)^4, 3 GF(4)-line stratifications: 2 admissible GF(2)-directions of dimension 2, 2 of them GF(4)-lines; every coset balanced; variances of C(2, uniform, r), r = 1, 2, match enumeration for 20 responses each
