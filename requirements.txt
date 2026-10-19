@@ -1,2 +1,4 @@
 numpy==2.4.6
 scipy==1.18.0
+matplotlib==3.11.0   # Figure 1 only
+Pillow==10.2.0       # Figure 1 and the download of the terrain tiles
