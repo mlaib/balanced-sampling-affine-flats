@@ -118,3 +118,7 @@ Directions are stored as reduced row-echelon bases of the dual subspace D = V⊥
 | `results/factorial_scube1_*.csv`, `results/factorial_scube2_*.csv`, `results/factorial_*_rev_*.csv` | Monte Carlo summaries of `samplecube` (landing by linear programming and by suppression of variables) and of the runs with the balancing variables in reverse order; their selected units are in `results/cube_samples/`. |
 | `results/mc_grid_scube/*.csv`, `results/samplecube_grid.csv` | Monte Carlo summaries of `samplecube` on the grid, by chunk and combined. |
 | `results/table1.md` – `results/table3.md`, `results/tableA.1.md`, `results/tableS1.md` – `results/tableS7.md` | Tables 1 to 3, A.1 and S1 to S7 of the manuscript (the file name is the table number). |
+
+## Licence
+
+The code is released under the GNU Affero General Public License, version 3 (AGPL-3.0; see `LICENSE`). This follows BalancedSampling 2.1.1 (AGPL-3), because `audit_cube.py` transcribes its `cube` function and row reduction into Python; the R scripts also use BalancedSampling and sampling (GPL >= 2). The data keep the terms of their sources: the R data set `volcano` is distributed with R, and the elevation blocks come from the Terrain Tiles, whose sources and licences are listed in the Data section above.
