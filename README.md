@@ -58,12 +58,14 @@ QUICK=1 bash reproduce.sh    # exact computations only, then the tables from the
 | `make_tables.py` | Tables 1–3, A.1 and S1–S7 from `results/`, including the exact shares of grid coset samples balanced on S2 and S4 and the exact main-effect weights of the coset designs. |
 | `run_samplecube.sh` | Section 5 and Supplement S2: `samplecube` of the package sampling 2.11 through `mc_cube.R` and `mc_grid.R` (both landings in the factorial frames, the landing by suppression of variables on S2 and S4 of the grid), and BalancedSampling and both landings of `samplecube` with the balancing variables in reverse order; each job is skipped if its output exists, so an interrupted run can be resumed. |
 | `samplecube_grid.py` | Section 5.2, Tables 3 and S5: summaries of the grid draws of `samplecube`, combined over chunks: sizes, design effects, shares of exactly balanced samples and τ. |
+| `multisurface/` | Supplementary material S8: the best-L coset designs of Section 5.2 on 256 further 61 x 61 elevation blocks from 16 terrains and on 360 simulated Gaussian fields, against the local pivotal, local cube and cube methods. `PLAN.md` holds the designs, surfaces and decision rule, written before any result was computed, and the outcome; `scripts/fetch_tiles.py` downloads the terrain tiles and cuts the blocks, `scripts/simulate_fields.py` simulates the fields, `scripts/draw_mc.R` and `scripts/run_mc.sh` store the Monte Carlo samples (evaluated on every surface), and `scripts/evaluate.py` writes `results/deff_long.csv`, `results/summary.md` and `results/tableS8.md`. `scripts/explore_systematic_cosets.py` is an exploratory check made after the results (systematic choice of the cosets for k = 183) and is not used in the manuscript. |
 | `reproduce.sh` | Runs all of the above in order. |
 
 ## Data
 
 | File | Content |
 |---|---|
+| `multisurface/data/elevation_blocks.npz` | The 256 elevation blocks of Supplement S8: Terrain Tiles on the Registry of Open Data on AWS (Mapzen/Tilezen, Terrarium encoding, zoom 10), with sources including SRTM, 3DEP and GMTED2010 data courtesy of the U.S. Geological Survey and EU-DEM layers produced using Copernicus data and information funded by the European Union; see https://github.com/tilezen/joerd/blob/master/docs/attribution.md for the full list and licences. |
 | `data/volcano61.csv` | Rows 14–74 (all 61 columns) of R's `datasets::volcano`; unit (i, j) has code 61 i + j. |
 | `data/grid_y.csv`, `data/grid_X.csv` | Elevations in unit order, and the 0/1 indicators of rows, columns, anti-diagonals i+j and diagonals i−j (levels 1–60 of each; level 0 dropped). |
 | `data/fact_p2_m7_Y.csv`, `data/fact_p3_m5_Y.csv` | The five responses of Section 5.1 (additive, mixed, interaction, noise, higher-order), seeds 7 and 5. |

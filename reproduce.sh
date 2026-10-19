@@ -36,4 +36,10 @@ python3 replicate_populations.py 500        # Supplement S3, Table S1: 500 furth
 python3 bootstrap_bank.py 200 500           # Supplement S3: Monte Carlo standard errors of the cube quantiles (resampled draws)
 python3 samplecube_grid.py                  # Section 5.2: summaries of the grid runs of samplecube
 python3 bound_centred.py                    # Section 5, Tables 3, S2 and S5: lower bounds (S1) with the size correction
+python3 multisurface/scripts/simulate_fields.py   # Supplement S8: 360 simulated Gaussian fields (seed fixed)
+if [ "${QUICK:-0}" != "1" ]; then
+  python3 multisurface/scripts/fetch_tiles.py    # Supplement S8: downloads the terrain tiles, rebuilds data/elevation_blocks.npz
+  bash multisurface/scripts/run_mc.sh            # Supplement S8: stored samples of lpm2, lcube and cube on the 61 x 61 grid
+fi
+python3 multisurface/scripts/evaluate.py        # Supplement S8 and Table S8 (multisurface/results/tableS8.md)
 python3 make_tables.py                      # Tables 1-3, A.1 and S1-S7 (results/table1.md ... table3.md, tableA.1.md, tableS1.md ... tableS7.md)

@@ -1,0 +1,3 @@
+W over Y_1(S4) relative to equal weight: 11.171
+best-16, random cosets       volcano 0.0118 | real blocks: wins vs lpm2 60.9%, median ratio 0.915
+best-16, systematic cosets   volcano 0.0116 | real blocks: wins vs lpm2 86.3%, median ratio 0.620

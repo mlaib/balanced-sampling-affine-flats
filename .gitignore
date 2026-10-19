@@ -1,3 +1,5 @@
 __pycache__/
 *.pyc
 logs/
+multisurface/data/tiles/
+multisurface/data/simulated_fields.npz
